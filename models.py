@@ -65,15 +65,59 @@ def load_llm(llm_model_path, qlora=False, force_download=False, from_init=False)
 
 def load_tokenizer(llm_model_path):
     """ setting up tokenizer. if your tokenizer needs special settings edit here. """
-    tokenizer = AutoTokenizer.from_pretrained(llm_model_path)
-    
-    if "huggyllama" in llm_model_path:
-        tokenizer.pad_token = "[PAD]"        
-    else:
-        # pass 
-        # tokenizer.add_special_tokens({"pad_token":"<pad>"})
-        if tokenizer.pad_token is None:    
-            tokenizer.pad_token = tokenizer.pad_token or tokenizer.eos_token
-    
-    tokenizer.padding_side = "left"
-    return tokenizer
+    try:
+        tokenizer = AutoTokenizer.from_pretrained(llm_model_path)
+        
+        # Handle different model-specific tokenizer settings
+        if "huggyllama" in llm_model_path:
+            tokenizer.pad_token = "[PAD]"        
+        elif "gpt2" in llm_model_path.lower():
+            tokenizer.pad_token = tokenizer.eos_token
+        elif "gpt-neo" in llm_model_path.lower() or "gpt-j" in llm_model_path.lower():
+            tokenizer.pad_token = tokenizer.eos_token
+        elif "pythia" in llm_model_path.lower():
+            tokenizer.pad_token = tokenizer.eos_token
+        elif "codegen" in llm_model_path.lower():
+            tokenizer.pad_token = tokenizer.eos_token
+        elif "falcon" in llm_model_path.lower():
+            tokenizer.pad_token = tokenizer.eos_token
+        elif "mpt" in llm_model_path.lower():
+            tokenizer.pad_token = tokenizer.eos_token
+        elif "opt" in llm_model_path.lower():
+            tokenizer.pad_token = tokenizer.eos_token
+        elif "bloom" in llm_model_path.lower():
+            # BLOOM models typically have pad token
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+        elif "llama" in llm_model_path.lower():
+            # LLaMA models typically need pad token set
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+        elif "gemma" in llm_model_path.lower():
+            # Gemma models
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+        elif "mistral" in llm_model_path.lower():
+            # Mistral models
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+        else:
+            # General fallback
+            if tokenizer.pad_token is None:    
+                tokenizer.pad_token = tokenizer.pad_token or tokenizer.eos_token
+        
+        tokenizer.padding_side = "left"
+        return tokenizer
+        
+    except Exception as e:
+        print(f"Error loading tokenizer for {llm_model_path}: {e}")
+        print("Trying with legacy=False...")
+        try:
+            tokenizer = AutoTokenizer.from_pretrained(llm_model_path, legacy=False)
+            if tokenizer.pad_token is None:
+                tokenizer.pad_token = tokenizer.eos_token
+            tokenizer.padding_side = "left"
+            return tokenizer
+        except Exception as e2:
+            print(f"Failed to load tokenizer with legacy=False: {e2}")
+            raise e
