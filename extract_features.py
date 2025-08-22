@@ -101,8 +101,9 @@ def extract_llm_features(filenames, dataset, args):
         torch.save(save_dict, save_path)
 
         del language_model, tokenizer, llm_feats, llm_output
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
         gc.collect()
     return
     
@@ -135,7 +136,8 @@ def extract_lvm_features(filenames, dataset, args):
             print("file exists. skipping")
             continue
 
-        vision_model = timm.create_model(lvm_model_name, pretrained=True).cuda().eval()
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        vision_model = timm.create_model(lvm_model_name, pretrained=True).to(device).eval()
         lvm_param_count = sum([p.numel() for p in vision_model.parameters()])
 
         transform = create_transform(
@@ -152,7 +154,7 @@ def extract_lvm_features(filenames, dataset, args):
 
         for i in trange(0, len(dataset), args.batch_size):
             with torch.no_grad():
-                ims = torch.stack([transform(dataset[j]['image']) for j in range(i, i+args.batch_size)]).cuda()
+                ims = torch.stack([transform(dataset[j]['image']) for j in range(i, i+args.batch_size)]).to(device)
                 lvm_output = vision_model(ims)
 
                 if args.pool == "cls":
@@ -164,8 +166,9 @@ def extract_lvm_features(filenames, dataset, args):
         torch.save({"feats": torch.cat(lvm_feats), "num_params": lvm_param_count}, save_path)
 
         del vision_model, transform, lvm_feats, lvm_output
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
         gc.collect()
 
 
@@ -182,7 +185,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset",        type=str, default="prh")
     parser.add_argument("--subset",         type=str, default="wit_1024")
     parser.add_argument("--caption_idx",    type=int, default=0)
-    parser.add_argument("--modelset",       type=str, default="val", choices=["val", "test"])
+    parser.add_argument("--modelset",       type=str, default="val", choices=["val", "test", "custom"])
     parser.add_argument("--modality",       type=str, default="all", choices=["vision", "language", "all"])
     parser.add_argument("--output_dir",     type=str, default="./results/features")
     parser.add_argument("--qlora",          action="store_true")
