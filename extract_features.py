@@ -333,6 +333,12 @@ Examples:
   # Extract features using validation model set
   python extract_features.py --modelset val --modality all
   
+  # Extract features from specific models (MPS-friendly)
+  python extract_features.py --models bigscience/bloomz-560m vit_tiny_patch16_224.augreg_in21k
+  
+  # Extract features from specific language models only
+  python extract_features.py --models bigscience/bloomz-560m bigscience/bloomz-1b1 --pool avg
+  
   # Extract features using exhaustive model set (language only)
   python extract_features.py --modelset exhaustive --modality language --pool avg
   
@@ -368,6 +374,9 @@ Supported Model Families:
     parser.add_argument("--caption_idx",    type=int, default=0, help="Caption index for multi-caption datasets")
     parser.add_argument("--modelset",       type=str, default="val", choices=["val", "test", "exhaustive", "custom"],
                        help="Model set to use")
+    parser.add_argument("--models",         type=str, nargs="+", default=None,
+                       help="Specific models to extract features from (overrides --modelset). "
+                            "Example: --models bigscience/bloomz-560m vit_tiny_patch16_224.augreg_in21k")
     parser.add_argument("--modality",       type=str, default="all", choices=["vision", "language", "all"],
                        help="Modality to extract features for")
     parser.add_argument("--output_dir",     type=str, default="./results/features", help="Output directory")
@@ -377,15 +386,35 @@ Supported Model Families:
     if args.qlora:
         print(f"QLoRA is set to True. The alignment score will be slightly off.")
 
-    llm_models, lvm_models = get_models(args.modelset, modality=args.modality)
+    # Handle individual model selection vs modelset
+    if args.models:
+        # Separate language and vision models from provided list
+        llm_models = []
+        lvm_models = []
+        
+        for model in args.models:
+            # Check if it's a vision model (timm models don't have '/' typically)
+            if ('/' not in model and 'vit' in model.lower()) or 'deit' in model.lower():
+                lvm_models.append(model)
+            else:
+                # Assume it's a language model (HuggingFace format with '/')
+                llm_models.append(model)
+        
+        print(f"Individual models specified:")
+        print(f"  Language models: {llm_models}")
+        print(f"  Vision models: {lvm_models}")
+    else:
+        # Use predefined modelset
+        llm_models, lvm_models = get_models(args.modelset, modality=args.modality)
+        print(f"Using modelset '{args.modelset}' with modality '{args.modality}'")
     
     # load dataset once outside    
     dataset = load_dataset(args.dataset, revision=args.subset, split='train')
 
-    if args.modality in ["all", "language"]:
+    if (args.modality in ["all", "language"]) and llm_models:
         # extract all language model features
         extract_llm_features(llm_models, dataset, args)
     
-    if args.modality in ["all", "vision"]:
+    if (args.modality in ["all", "vision"]) and lvm_models:
         # extract all vision model features
         extract_lvm_features(lvm_models, dataset, args)
