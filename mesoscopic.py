@@ -256,8 +256,11 @@ class MesoscopicAnalysis:
             complexity = -np.sum(s_norm * np.log(s_norm + 1e-10))
             dynamics['feature_complexity'].append(float(complexity))
             
-            # Manifold capacity (uses local dimension estimates)
-            capacity = self.estimate_manifold_capacity(layer_features)
+            # Manifold capacity (simplified estimate)
+            try:
+                capacity = self.estimate_manifold_capacity_fast(layer_features)
+            except:
+                capacity = intrinsic_dim  # Fallback to intrinsic dimension
             dynamics['manifold_capacity'].append(float(capacity))
         
         return dynamics
@@ -285,6 +288,20 @@ class MesoscopicAnalysis:
                         local_dims.append(local_dim)
         
         return np.median(local_dims) if local_dims else 0
+    
+    def estimate_manifold_capacity_fast(self, features):
+        """Fast estimate of manifold capacity using PCA"""
+        # Use PCA-based estimate instead of k-NN
+        _, s, _ = np.linalg.svd(features - features.mean(axis=0), full_matrices=False)
+        s = s[s > 1e-10]
+        
+        if len(s) == 0:
+            return 0
+            
+        # Participation ratio as capacity estimate
+        capacity = (np.sum(s) ** 2) / np.sum(s ** 2)
+        
+        return capacity
     
     def analyze_representational_change(self, features):
         """Analyze how representations change across layers"""
