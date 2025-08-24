@@ -369,7 +369,7 @@ Supported Model Families:
     parser.add_argument("--pool",           type=str, default='avg', choices=['avg', 'cls', 'last', 'max'], 
                        help="Pooling strategy: avg=average, cls=CLS token, last=last token, max=max pool")
     parser.add_argument("--prompt",         action="store_true", help="Use prompting for language models")
-    parser.add_argument("--dataset",        type=str, default="prh", help="Dataset to use")
+    parser.add_argument("--dataset",        type=str, default="minhuh/prh", help="Dataset to use")
     parser.add_argument("--subset",         type=str, default="wit_1024", help="Dataset subset")
     parser.add_argument("--caption_idx",    type=int, default=0, help="Caption index for multi-caption datasets")
     parser.add_argument("--modelset",       type=str, default="val", choices=["val", "test", "exhaustive", "custom"],

@@ -1,3 +1,68 @@
+def get_model_size_estimate(model_name, model_type="llm"):
+    """
+    Estimate model size for sorting purposes.
+    Returns size in millions of parameters.
+    """
+    model_name_lower = model_name.lower()
+    
+    if model_type == "llm":
+        # Extract size from model name
+        if "70m" in model_name_lower: return 70
+        elif "125m" in model_name_lower: return 125  
+        elif "160m" in model_name_lower: return 160
+        elif "350m" in model_name_lower: return 350
+        elif "410m" in model_name_lower: return 410
+        elif "560m" in model_name_lower: return 560
+        elif "1b" in model_name_lower or "1.3b" in model_name_lower: return 1300
+        elif "1b1" in model_name_lower: return 1100
+        elif "1b7" in model_name_lower: return 1700
+        elif "1.4b" in model_name_lower: return 1400
+        elif "2b" in model_name_lower: return 2000
+        elif "2.7b" in model_name_lower: return 2700
+        elif "2.8b" in model_name_lower: return 2800
+        elif "3b" in model_name_lower: return 3000
+        elif "6b" in model_name_lower or "6.7b" in model_name_lower: return 6700
+        elif "6.9b" in model_name_lower: return 6900
+        elif "7b" in model_name_lower: return 7000
+        elif "8b" in model_name_lower: return 8000
+        elif "12b" in model_name_lower: return 12000
+        elif "13b" in model_name_lower: return 13000
+        elif "16b" in model_name_lower: return 16000
+        elif "30b" in model_name_lower: return 30000
+        elif "40b" in model_name_lower: return 40000
+        elif "65b" in model_name_lower: return 65000
+        elif "66b" in model_name_lower: return 66000
+        elif "70b" in model_name_lower: return 70000
+        elif "8x7b" in model_name_lower: return 45000  # Mixtral effective size
+        # GPT models
+        elif "gpt2" == model_name_lower: return 117
+        elif "gpt2-medium" in model_name_lower: return 345
+        elif "gpt2-large" in model_name_lower: return 762
+        elif "gpt2-xl" in model_name_lower: return 1542
+        elif "medium" in model_name_lower and "dialo" in model_name_lower: return 345
+        elif "large" in model_name_lower and "dialo" in model_name_lower: return 762
+        else: return 7000  # Default fallback
+            
+    elif model_type == "lvm":
+        # Vision model sizes
+        if "tiny" in model_name_lower: return 5
+        elif "small" in model_name_lower: return 22
+        elif "base" in model_name_lower: return 86
+        elif "large" in model_name_lower: return 307
+        elif "huge" in model_name_lower: return 632
+        elif "giant" in model_name_lower: return 1137
+        else: return 86  # Default to base size
+    
+    return 7000  # Default fallback
+
+
+def sort_models_by_size(models, model_type="llm"):
+    """
+    Sort models from smallest to largest based on estimated parameter count.
+    """
+    model_sizes = [(model, get_model_size_estimate(model, model_type)) for model in models]
+    sorted_models = sorted(model_sizes, key=lambda x: x[1])
+    return [model for model, size in sorted_models]
 
 
 def get_models(modelset, modality='all'):
