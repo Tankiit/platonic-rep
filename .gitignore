@@ -1,7 +1,10 @@
-*.sh
+# Python
+__pycache__/
+*.py[cod]
+*.pth
+*.pt
 data/
+outputs/
 results/
-*pt
-*egg-info/**
-**__pycache__/**
-*.pyc*
+runs/
+.DS_Store
