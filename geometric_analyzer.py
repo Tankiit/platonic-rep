@@ -55,16 +55,18 @@ class GeometricAnalyzer:
         
         # Register hooks
         hooks = []
+        hook_names = []
         for name, module in model.named_modules():
             if layers is None or name in layers:
                 if isinstance(module, (nn.Linear, nn.Conv2d, nn.ReLU)):
                     hooks.append(module.register_forward_hook(get_hook(name)))
+                    hook_names.append(name)
         
         # Collect representations
-        all_representations = {name: [] for name in representations}
+        all_representations = {name: [] for name in hook_names}
         
         with torch.no_grad():
-            for batch_idx, (x, y) in enumerate(tqprogress(data_loader, desc="Extracting representations")):
+            for batch_idx, (x, y) in enumerate(tqdm(data_loader, desc="Extracting representations")):
                 if batch_idx >= 10:  # Limit batches
                     break
                     
@@ -708,7 +710,8 @@ def run_geometric_analysis(model, data_loader, save_results=True):
     """
     Run comprehensive geometric analysis on a model
     """
-    analyzer = GeometricAnalyzer()
+    device = next(model.parameters()).device
+    analyzer = GeometricAnalyzer(device=device)
     
     print("Starting geometric analysis...")
     
@@ -770,7 +773,8 @@ def compare_model_geometries(model1, model2, data_loader):
     """
     Compare geometric properties of two models
     """
-    analyzer = GeometricAnalyzer()
+    device = next(model1.parameters()).device
+    analyzer = GeometricAnalyzer(device=device)
     
     print("Starting model comparison...")
     
@@ -1403,9 +1407,10 @@ def run_comprehensive_analysis(model, data_loader, experiment_name="comprehensiv
     print("Starting comprehensive neural representation analysis...")
 
     # Initialize analyzers
-    geometric_analyzer = GeometricAnalyzer()
-    ntk_analyzer = NTKAnalyzer()
-    agop_analyzer = AGOPAnalyzer()
+    device = next(model.parameters()).device
+    geometric_analyzer = GeometricAnalyzer(device=device)
+    ntk_analyzer = NTKAnalyzer(device=device)
+    agop_analyzer = AGOPAnalyzer(device=device)
 
     results = {}
 
@@ -1460,7 +1465,7 @@ def run_geometric_analysis_multiple_datasets(model_fn, dataset_loaders, save_res
     Returns:
         results_dict: dict mapping dataset name to geometric analysis results
     """
-    analyzer = GeometricAnalyzer()
+    analyzer = GeometricAnalyzer(device='cpu')  # Default to CPU for multi-dataset analysis
     results_dict = {}
     for dataset_name, data_loader in dataset_loaders.items():
         print(f"\n=== Geometric Analysis for {dataset_name} ===")
@@ -2059,7 +2064,7 @@ def demo_phase_analysis():
     print(f"\nDataset: CIFAR-10 validation set with {len(data_loader.dataset)} samples")
     
     # Run geometric analysis on each phase
-    analyzer = GeometricAnalyzer()
+    analyzer = GeometricAnalyzer(device='cpu')  # Use CPU for demo
     
     print("\nAnalyzing geometric properties...")
     lazy_geom = run_geometric_analysis(lazy_model, data_loader, save_results=False)
@@ -2398,8 +2403,6 @@ def create_comprehensive_data_loader(data_dir="/Users/tanmoy/research/data", dat
         pin_memory=True,
         drop_last=False
     )
-    
-    print(f"✓ Loaded {dataset.upper()} dataset: {len(dataset_obj)} samples, {num_classes} classes")
     
     return data_loader, num_classes
 

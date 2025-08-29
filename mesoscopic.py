@@ -28,6 +28,10 @@ class MesoscopicAnalysis:
         self.feature_dir = Path(feature_dir)
         self.output_dir = Path("./results/mesoscopic_analysis/")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Load dataset for labels and inputs
+        from datasets import load_dataset
+        self.dataset = load_dataset("minhuh/prh", revision="wit_1024", split='train')
         
     def analyze_all_models(self):
         """Run mesoscopic analysis on all models"""
@@ -597,7 +601,7 @@ def main():
     analyzer = MesoscopicAnalysis()
     
     # Option 1: Run fresh analysis
-    # analyzer.analyze_all_models()
+    analyzer.analyze_all_models()
     
     # Option 2: Load and analyze existing results
     results = analyzer.load_results()
