@@ -1562,219 +1562,6 @@ def parse_arguments():
     
     return parser.parse_args()
 
-if __name__ == "__main__":
-    args = parse_arguments()
-    
-    print(f"🔬 Geometric Analysis Configuration:")
-    print(f"  Model: {args.model}")
-    print(f"  Dataset: {args.dataset}")
-    print(f"  Data directory: {args.data_dir}")
-    print(f"  Device: {args.device}")
-    print(f"  Use timm: {args.use_timm}")
-    print(f"  Pretrained: {args.pretrained}")
-    
-    # Create data loader
-    data_loader, dataset_num_classes = create_comprehensive_data_loader(
-        data_dir=args.data_dir,
-        dataset=args.dataset,
-        batch_size=args.batch_size,
-        num_workers=args.num_workers,
-        image_size=args.image_size,
-        split=args.split
-    )
-    
-    # Update num_classes from dataset if not explicitly set
-    if args.num_classes == 1000 and dataset_num_classes != 1000:
-        args.num_classes = dataset_num_classes
-        print(f"Updated num_classes to {args.num_classes} based on dataset")
-    
-    # Run analysis based on mode
-    if args.analyze_phases:
-        print(f"\n🔬 Running Multi-Phase Analysis: {args.phases}")
-        print("This will initialize models in different training phases and compare their geometry")
-        
-        # Initialize analyzer
-        analyzer = GeometricAnalyzer(device=args.device)
-        
-        # Store results for each phase
-        phase_results = {}
-        phase_models = {}
-        
-        # Analyze each phase
-        for phase in args.phases:
-            print(f"\n--- Analyzing {phase.upper()} phase ---")
-            
-            # Load model for this phase
-            model = load_model_from_phase(
-                phase=phase,
-                model_name=args.model,
-                num_classes=args.num_classes,
-                pretrained=args.pretrained,
-                use_timm=args.use_timm,
-                scale_factor=args.scale_factor,
-                simulate_training=args.simulate_training,
-                training_steps=args.training_steps,
-                checkpoint_path=args.checkpoint_path
-            )
-            
-            model = model.to(args.device)
-            phase_models[phase] = model
-            
-            print(f"Model phase: {phase}")
-            print(f"Scale factor: {model.scale_factor}")
-            
-            # Run geometric analysis
-            with tqdm(total=4, desc=f"Geometric Analysis [{phase}]") as pbar:
-                representations = analyzer.extract_representations(model, data_loader)
-                pbar.update(1)
-                
-                metrics = analyzer.compute_representation_metrics(representations)
-                pbar.update(1)
-                
-                curvature = analyzer.analyze_curvature(representations)
-                pbar.update(1)
-                
-                transitions = analyzer.analyze_layer_transitions(representations)
-                pbar.update(1)
-            
-            phase_results[phase] = {
-                'representations': representations,
-                'metrics': metrics,
-                'curvature': curvature,
-                'transitions': transitions
-            }
-        
-        # Cross-phase comparison
-        print("\n=== Cross-Phase Analysis ===")
-        comparison_results = {}
-        
-        # Compare alignment between phases
-        for i, phase1 in enumerate(args.phases):
-            for phase2 in args.phases[i+1:]:
-                print(f"Comparing {phase1} vs {phase2}...")
-                alignment_geom = analyzer.compute_alignment_geometry(
-                    phase_models[phase1], 
-                    phase_models[phase2], 
-                    data_loader
-                )
-                comparison_results[f"{phase1}_vs_{phase2}"] = alignment_geom
-        
-        # Analyze key research questions
-        research_insights = analyze_phase_research_questions(phase_results)
-        
-        # Create comprehensive visualization
-        fig = visualize_phase_comparison(phase_results, args.phases)
-        
-        if args.save_results:
-            # Save phase comparison results
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            results_dir = Path(f"phase_analysis_{timestamp}")
-            results_dir.mkdir(exist_ok=True)
-            
-            fig.savefig(results_dir / "phase_comparison.png", dpi=300, bbox_inches='tight')
-            
-            # Save detailed results
-            with open(results_dir / "phase_analysis.json", 'w') as f:
-                def convert_numpy(obj):
-                    if isinstance(obj, np.generic):
-                        return obj.item()
-                    elif isinstance(obj, np.ndarray):
-                        return obj.tolist()
-                    elif isinstance(obj, dict):
-                        return {k: convert_numpy(v) for k, v in obj.items()}
-                    elif isinstance(obj, (list, tuple)):
-                        return [convert_numpy(v) for v in obj]
-                    return obj
-                
-                json.dump({
-                    'phase_results': convert_numpy(phase_results),
-                    'comparison_results': convert_numpy(comparison_results),
-                    'research_insights': convert_numpy(research_insights),
-                    'config': {
-                        'model': args.model,
-                        'dataset': args.dataset,
-                        'num_classes': args.num_classes,
-                        'phases_analyzed': args.phases,
-                        'use_timm': args.use_timm,
-                        'pretrained': args.pretrained
-                    }
-                }, f, indent=2)
-            
-            print(f"Results saved to {results_dir}")
-        
-        
-        
-        insights = research_insights
-        summary = insights['summary']
-        
-        
-        for metric, ranking in summary['phase_rankings'].items():
-            print(f"  {metric}: {' > '.join(ranking)}")
-        
-        results = {
-            'phase_results': phase_results,
-            'comparison_results': comparison_results,
-            'research_insights': research_insights,
-            'models': phase_models
-        }
-        
-    else:
-        # Load single model
-        elif args.use_timm:
-            model = load_model_with_timm(args.model, args.num_classes, args.pretrained)
-        else:
-            model = load_torchvision_model(args.model, args.num_classes, args.pretrained)
-        
-        model = model.to(args.device)
-        print(f"✓ Model loaded: {args.model}")
-        
-        if args.use_wandb or args.experiment_name != 'geometric_analysis':
-            # Run comprehensive analysis with tracking
-            results, tracker = run_comprehensive_analysis(
-                model, 
-                data_loader, 
-                experiment_name=args.experiment_name,
-                use_wandb=args.use_wandb
-            )
-            print(f"Comprehensive analysis completed. Results saved to: {tracker.exp_dir}")
-        else:
-            # Run basic geometric analysis
-            results = run_geometric_analysis(model, data_loader, save_results=args.save_results)
-            print("Geometric analysis completed.")
-        
-        # Analysis Summary
-        print(f"\nAnalysis Summary:")
-        print(f"- Dataset: {args.dataset}")
-        print(f"- Model: {args.model}")
-        print(f"- Samples analyzed: {len(data_loader.dataset)}")
-        if 'geometric' in results:
-            n_layers = len(results['geometric']['metrics'])
-            print(f"- Layers analyzed: {n_layers}")
-            
-            # Show some key metrics
-            first_layer = list(results['geometric']['metrics'].keys())[0]
-            last_layer = list(results['geometric']['metrics'].keys())[-1]
-            
-            first_dim = results['geometric']['metrics'][first_layer]['intrinsic_dim']['pca_90']
-            last_dim = results['geometric']['metrics'][last_layer]['intrinsic_dim']['pca_90']
-            
-            print(f"- Intrinsic dimension (first layer): {first_dim}")
-            print(f"- Intrinsic dimension (last layer): {last_dim}")
-        
-        elif 'metrics' in results:
-            n_layers = len(results['metrics'])
-            print(f"- Layers analyzed: {n_layers}")
-            
-            # Show some key metrics
-            first_layer = list(results['metrics'].keys())[0]
-            last_layer = list(results['metrics'].keys())[-1]
-            
-            first_dim = results['metrics'][first_layer]['intrinsic_dim']['pca_90']
-            last_dim = results['metrics'][last_layer]['intrinsic_dim']['pca_90']
-            
-            print(f"- Intrinsic dimension (first layer): {first_dim}")
-            print(f"- Intrinsic dimension (last layer): {last_dim}")
-
 def load_model_with_timm(model_name, num_classes=1000, pretrained=True, checkpoint_path=None):
     """Load model using timm library"""
     try:
@@ -2265,7 +2052,7 @@ def demo_phase_analysis():
     print(f"✓ Chaotic model: {chaotic_model.phase} phase, scale={chaotic_model.scale_factor}")
     
     # Create test data using CIFAR-10
-    data_loader, _ = create_comprehensive_data_loader(
+    data_loader = create_standard_data_loader(
         dataset='cifar10', batch_size=32, split='val'
     )
     
@@ -2626,3 +2413,218 @@ def create_standard_data_loader(data_dir="/Users/tanmoy/research/data", dataset=
         num_workers=num_workers, image_size=image_size, split=split
     )
     return data_loader
+
+if __name__ == "__main__":
+    args = parse_arguments()
+    
+    print(f"🔬 Geometric Analysis Configuration:")
+    print(f"  Model: {args.model}")
+    print(f"  Dataset: {args.dataset}")
+    print(f"  Data directory: {args.data_dir}")
+    print(f"  Device: {args.device}")
+    print(f"  Use timm: {args.use_timm}")
+    print(f"  Pretrained: {args.pretrained}")
+    
+    # Create data loader
+    data_loader, dataset_num_classes = create_comprehensive_data_loader(
+        data_dir=args.data_dir,
+        dataset=args.dataset,
+        batch_size=args.batch_size,
+        num_workers=args.num_workers,
+        image_size=args.image_size,
+        split=args.split
+    )
+    
+    # Update num_classes from dataset if not explicitly set
+    if args.num_classes == 1000 and dataset_num_classes != 1000:
+        args.num_classes = dataset_num_classes
+        print(f"Updated num_classes to {args.num_classes} based on dataset")
+    
+    # Run analysis based on mode
+    if args.analyze_phases:
+        print(f"\n🔬 Running Multi-Phase Analysis: {args.phases}")
+        print("This will initialize models in different training phases and compare their geometry")
+        
+        # Initialize analyzer
+        analyzer = GeometricAnalyzer(device=args.device)
+        
+        # Store results for each phase
+        phase_results = {}
+        phase_models = {}
+        
+        # Analyze each phase
+        for phase in args.phases:
+            print(f"\n--- Analyzing {phase.upper()} phase ---")
+            
+            # Load model for this phase
+            model = load_model_from_phase(
+                phase=phase,
+                model_name=args.model,
+                num_classes=args.num_classes,
+                pretrained=args.pretrained,
+                use_timm=args.use_timm,
+                scale_factor=args.scale_factor,
+                simulate_training=args.simulate_training,
+                training_steps=args.training_steps,
+                checkpoint_path=args.checkpoint_path
+            )
+            
+            model = model.to(args.device)
+            phase_models[phase] = model
+            
+            print(f"Model phase: {phase}")
+            print(f"Scale factor: {model.scale_factor}")
+            
+            # Run geometric analysis
+            with tqdm(total=4, desc=f"Geometric Analysis [{phase}]") as pbar:
+                representations = analyzer.extract_representations(model, data_loader)
+                pbar.update(1)
+                
+                metrics = analyzer.compute_representation_metrics(representations)
+                pbar.update(1)
+                
+                curvature = analyzer.analyze_curvature(representations)
+                pbar.update(1)
+                
+                transitions = analyzer.analyze_layer_transitions(representations)
+                pbar.update(1)
+            
+            phase_results[phase] = {
+                'representations': representations,
+                'metrics': metrics,
+                'curvature': curvature,
+                'transitions': transitions
+            }
+        
+        # Cross-phase comparison
+        print("\n=== Cross-Phase Analysis ===")
+        comparison_results = {}
+        
+        # Compare alignment between phases
+        for i, phase1 in enumerate(args.phases):
+            for phase2 in args.phases[i+1:]:
+                print(f"Comparing {phase1} vs {phase2}...")
+                alignment_geom = analyzer.compute_alignment_geometry(
+                    phase_models[phase1], 
+                    phase_models[phase2], 
+                    data_loader
+                )
+                comparison_results[f"{phase1}_vs_{phase2}"] = alignment_geom
+        
+        # Analyze key research questions
+        research_insights = analyze_phase_research_questions(phase_results)
+        
+        # Create comprehensive visualization
+        fig = visualize_phase_comparison(phase_results, args.phases)
+        
+        if args.save_results:
+            # Save phase comparison results
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            results_dir = Path(f"phase_analysis_{timestamp}")
+            results_dir.mkdir(exist_ok=True)
+            
+            fig.savefig(results_dir / "phase_comparison.png", dpi=300, bbox_inches='tight')
+            
+            # Save detailed results
+            with open(results_dir / "phase_analysis.json", 'w') as f:
+                def convert_numpy(obj):
+                    if isinstance(obj, np.generic):
+                        return obj.item()
+                    elif isinstance(obj, np.ndarray):
+                        return obj.tolist()
+                    elif isinstance(obj, dict):
+                        return {k: convert_numpy(v) for k, v in obj.items()}
+                    elif isinstance(obj, (list, tuple)):
+                        return [convert_numpy(v) for v in obj]
+                    return obj
+                
+                json.dump({
+                    'phase_results': convert_numpy(phase_results),
+                    'comparison_results': convert_numpy(comparison_results),
+                    'research_insights': convert_numpy(research_insights),
+                    'config': {
+                        'model': args.model,
+                        'dataset': args.dataset,
+                        'num_classes': args.num_classes,
+                        'phases_analyzed': args.phases,
+                        'use_timm': args.use_timm,
+                        'pretrained': args.pretrained
+                    }
+                }, f, indent=2)
+            
+            print(f"Results saved to {results_dir}")
+        
+        
+        
+        insights = research_insights
+        summary = insights['summary']
+        
+        
+        for metric, ranking in summary['phase_rankings'].items():
+            print(f"  {metric}: {' > '.join(ranking)}")
+        
+        results = {
+            'phase_results': phase_results,
+            'comparison_results': comparison_results,
+            'research_insights': research_insights,
+            'models': phase_models
+        }
+        
+    else:
+        # Load single model
+        if args.checkpoint_path:
+            model = load_model_from_checkpoint(args.checkpoint_path, num_classes=args.num_classes)
+        elif args.use_timm:
+            model = load_model_with_timm(args.model, args.num_classes, args.pretrained)
+        else:
+            model = load_torchvision_model(args.model, args.num_classes, args.pretrained)
+        
+        model = model.to(args.device)
+        print(f"✓ Model loaded: {args.model}")
+        
+        if args.use_wandb or args.experiment_name != 'geometric_analysis':
+            # Run comprehensive analysis with tracking
+            results, tracker = run_comprehensive_analysis(
+                model, 
+                data_loader, 
+                experiment_name=args.experiment_name,
+                use_wandb=args.use_wandb
+            )
+            print(f"Comprehensive analysis completed. Results saved to: {tracker.exp_dir}")
+        else:
+            # Run basic geometric analysis
+            results = run_geometric_analysis(model, data_loader, save_results=args.save_results)
+            print("Geometric analysis completed.")
+        
+        # Analysis Summary
+        print(f"\nAnalysis Summary:")
+        print(f"- Dataset: {args.dataset}")
+        print(f"- Model: {args.model}")
+        print(f"- Samples analyzed: {len(data_loader.dataset)}")
+        if 'geometric' in results:
+            n_layers = len(results['geometric']['metrics'])
+            print(f"- Layers analyzed: {n_layers}")
+            
+            # Show some key metrics
+            first_layer = list(results['geometric']['metrics'].keys())[0]
+            last_layer = list(results['geometric']['metrics'].keys())[-1]
+            
+            first_dim = results['geometric']['metrics'][first_layer]['intrinsic_dim']['pca_90']
+            last_dim = results['geometric']['metrics'][last_layer]['intrinsic_dim']['pca_90']
+            
+            print(f"- Intrinsic dimension (first layer): {first_dim}")
+            print(f"- Intrinsic dimension (last layer): {last_dim}")
+        
+        elif 'metrics' in results:
+            n_layers = len(results['metrics'])
+            print(f"- Layers analyzed: {n_layers}")
+            
+            # Show some key metrics
+            first_layer = list(results['metrics'].keys())[0]
+            last_layer = list(results['metrics'].keys())[-1]
+            
+            first_dim = results['metrics'][first_layer]['intrinsic_dim']['pca_90']
+            last_dim = results['metrics'][last_layer]['intrinsic_dim']['pca_90']
+            
+            print(f"- Intrinsic dimension (first layer): {first_dim}")
+            print(f"- Intrinsic dimension (last layer): {last_dim}")
