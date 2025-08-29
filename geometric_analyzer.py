@@ -67,7 +67,9 @@ class GeometricAnalyzer:
         
         with torch.no_grad():
             for batch_idx, (x, y) in enumerate(tqdm(data_loader, desc="Extracting representations")):
-                if batch_idx >= 10:  # Limit batches
+                # More aggressive batch limiting for MPS
+                max_batches = 3 if self.device == 'mps' else 10
+                if batch_idx >= max_batches:
                     break
                     
                 x = x.to(self.device)
@@ -100,6 +102,11 @@ class GeometricAnalyzer:
             rep = representations[layer_name]
             rep_np = rep.numpy()
             
+            # For MPS, subsample to prevent memory issues
+            if self.device == 'mps' and rep_np.shape[0] > 100:
+                indices = np.random.choice(rep_np.shape[0], 100, replace=False)
+                rep_np = rep_np[indices]
+            
             # Basic statistics
             metrics[layer_name] = {
                 'mean_activation': np.mean(rep_np),
@@ -108,14 +115,16 @@ class GeometricAnalyzer:
                 'dimensionality': rep_np.shape[1]
             }
             
-            # Intrinsic dimensionality
-            metrics[layer_name]['intrinsic_dim'] = self._estimate_intrinsic_dimension(rep_np)
+            # Intrinsic dimensionality (skip for MPS to prevent memory issues)
+            if self.device == 'mps':
+                metrics[layer_name]['intrinsic_dim'] = {'basic_rank': min(rep_np.shape)}
+            else:
+                metrics[layer_name]['intrinsic_dim'] = self._estimate_intrinsic_dimension(rep_np)
             
-            # Geometric properties
-            metrics[layer_name].update(self._compute_geometric_properties(rep_np))
-            
-            # Topological features
-            metrics[layer_name].update(self._compute_topological_features(rep_np))
+            # Geometric properties (simplified for MPS)
+            if self.device != 'mps':
+                metrics[layer_name].update(self._compute_geometric_properties(rep_np))
+                metrics[layer_name].update(self._compute_topological_features(rep_np))
         
         return metrics
     
@@ -715,7 +724,9 @@ def run_geometric_analysis(model, data_loader, save_results=True):
     
     print("Starting geometric analysis...")
     
-    with tqdm(total=5, desc="Geometric Analysis Pipeline") as pbar:
+    # Simplified pipeline for MPS
+    total_steps = 3 if device == 'mps' else 5
+    with tqdm(total=total_steps, desc="Geometric Analysis Pipeline") as pbar:
         print("Extracting representations...")
         representations = analyzer.extract_representations(model, data_loader)
         pbar.update(1)
@@ -724,18 +735,25 @@ def run_geometric_analysis(model, data_loader, save_results=True):
         metrics = analyzer.compute_representation_metrics(representations)
         pbar.update(1)
         
-        print("Analyzing curvature...")
-        curvature = analyzer.analyze_curvature(representations)
-        pbar.update(1)
-        
-        print("Analyzing layer transitions...")
-        transitions = analyzer.analyze_layer_transitions(representations)
-        pbar.update(1)
-        
-        # Create visualizations
-        print("Creating visualizations...")
-        fig = analyzer.visualize_geometric_analysis(representations, metrics)
-        pbar.update(1)
+        if device != 'mps':
+            print("Analyzing curvature...")
+            curvature = analyzer.analyze_curvature(representations)
+            pbar.update(1)
+            
+            print("Analyzing layer transitions...")
+            transitions = analyzer.analyze_layer_transitions(representations)
+            pbar.update(1)
+            
+            # Create visualizations
+            print("Creating visualizations...")
+            fig = analyzer.visualize_geometric_analysis(representations, metrics)
+            pbar.update(1)
+        else:
+            print("Creating simplified visualizations...")
+            curvature = {}
+            transitions = {}
+            fig = analyzer.visualize_geometric_analysis(representations, metrics)
+            pbar.update(1)
     
     if save_results:
         fig.savefig('geometric_analysis.png', dpi=300)
@@ -963,7 +981,10 @@ class NTKAnalyzer:
         x_sample = torch.cat(x_sample)[:n_samples].to(self.device)
 
         # Limit sample size to prevent memory issues
-        max_samples = min(n_samples, 100)  # Cap at 100 samples
+        if self.device == 'mps':
+            max_samples = min(n_samples, 25)  # Smaller for MPS
+        else:
+            max_samples = min(n_samples, 100)  # Cap at 100 samples
         x_sample = x_sample[:max_samples]
         n = len(x_sample)
 
@@ -1097,7 +1118,10 @@ class AGOPAnalyzer:
 
                 # Clear cache periodically
                 if batch_idx % 2 == 0:
-                    torch.cuda.empty_cache()
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                    elif torch.backends.mps.is_available():
+                        torch.mps.empty_cache()
 
                 pbar.update(1)
 
@@ -1154,7 +1178,7 @@ class AlignmentAnalyzer:
     def compute_cka(self, features1, features2):
         """Compute Centered Kernel Alignment with memory optimization"""
         # Limit sample size to prevent memory issues
-        max_samples = 1000
+        max_samples = 200 if self.device == 'mps' else 1000
         if features1.shape[0] > max_samples:
             indices = torch.randperm(features1.shape[0])[:max_samples]
             features1 = features1[indices]
@@ -1167,7 +1191,7 @@ class AlignmentAnalyzer:
         features2 = features2 - features2.mean(dim=0, keepdim=True)
 
         # Compute Gram matrices in batches to save memory
-        batch_size = min(500, n)
+        batch_size = min(100 if self.device == 'mps' else 500, n)
 
         K = torch.zeros(n, n, device=features1.device)
         L = torch.zeros(n, n, device=features2.device)
@@ -1545,8 +1569,16 @@ def parse_arguments():
     parser.add_argument('--experiment_name', type=str, default='geometric_analysis',
                        help='Name for the experiment')
     
-    parser.add_argument('--device', type=str, default='cuda' if torch.cuda.is_available() else 'cpu',
-                       help='Device to use (cuda/cpu)')
+    # Auto-detect best available device
+    if torch.backends.mps.is_available():
+        default_device = 'mps'
+    elif torch.cuda.is_available():
+        default_device = 'cuda'
+    else:
+        default_device = 'cpu'
+    
+    parser.add_argument('--device', type=str, default=default_device,
+                       help='Device to use (mps/cuda/cpu)')
     
     # Multi-phase analysis arguments
     parser.add_argument('--analyze_phases', action='store_true',
