@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""
-Multi-Model Analysis: Macroscopic and Mesoscopic Analysis across different architectures
-Supports MLP, CNN, ResNet, ViT models using timm library with CIFAR-10/100, SVHN datasets
-"""
 
 import torch
 import numpy as np
@@ -266,6 +262,10 @@ class MultiModelAnalyzer:
                         if len(layer_features.shape) == 4:  # [B, C, H, W]
                             layer_features = torch.nn.functional.adaptive_avg_pool2d(layer_features, 1).squeeze(-1).squeeze(-1)
                         
+                        # Debug: print layer info for first batch
+                        if batch_idx == 0:
+                            print(f"  Layer {layer_name}: {layer_features.shape}")
+                        
                         all_features[layer_name].append(layer_features.cpu())
                         
                 else:
@@ -276,8 +276,8 @@ class MultiModelAnalyzer:
                 
                 batch_features.append(targets.cpu())
                 
-                # Limit number of samples for analysis
-                if batch_idx >= 50:  # ~1600 samples with batch_size=32
+                # Limit number of samples for analysis (reduced for faster testing)
+                if batch_idx >= 8:  # ~512 samples with batch_size=64 (very fast)
                     break
         
         # Concatenate features across batches
@@ -285,18 +285,40 @@ class MultiModelAnalyzer:
         for layer_name, layer_features in all_features.items():
             final_features[layer_name] = torch.cat(layer_features, dim=0)
         
-        # Stack features across layers: [N, L, D]
+        # Handle different feature dimensions across layers
         layer_names = sorted(final_features.keys())
-        feature_dim = final_features[layer_names[0]].shape[1]
         num_samples = final_features[layer_names[0]].shape[0]
         
-        stacked_features = torch.zeros(num_samples, len(layer_names), feature_dim)
+        # Find the maximum feature dimension across all layers
+        max_feature_dim = max(final_features[layer_name].shape[1] for layer_name in layer_names)
+        
+        # Create stacked features with padding for different dimensions
+        stacked_features = torch.zeros(num_samples, len(layer_names), max_feature_dim)
+        feature_dims = {}
+        
         for i, layer_name in enumerate(layer_names):
-            stacked_features[:, i, :] = final_features[layer_name]
+            layer_features = final_features[layer_name]
+            current_dim = layer_features.shape[1]
+            feature_dims[layer_name] = current_dim
+            
+            if current_dim == max_feature_dim:
+                # Direct assignment if dimensions match
+                stacked_features[:, i, :] = layer_features
+            else:
+                # Pad or truncate to match max dimension
+                if current_dim < max_feature_dim:
+                    # Pad with zeros
+                    padded_features = torch.zeros(num_samples, max_feature_dim, device=layer_features.device)
+                    padded_features[:, :current_dim] = layer_features
+                    stacked_features[:, i, :] = padded_features
+                else:
+                    # Truncate to max dimension
+                    stacked_features[:, i, :] = layer_features[:, :max_feature_dim]
         
         return {
             'feats': stacked_features,
             'layer_names': layer_names,
+            'feature_dims': feature_dims,  # Store original dimensions
             'targets': torch.cat(batch_features, dim=0)
         }
     
@@ -329,7 +351,7 @@ class MultiModelAnalyzer:
         
         # Create data loader
         print(f"Creating data loader for {dataset}...")
-        data_loader, num_classes = self.create_data_loader(dataset, batch_size=32, split='train')
+        data_loader, num_classes = self.create_data_loader(dataset, batch_size=64, split='train')
         if data_loader is None:
             return None
         
@@ -368,7 +390,9 @@ class MultiModelAnalyzer:
                 'num_samples': features_data['feats'].shape[0],
                 'num_layers': features_data['feats'].shape[1],
                 'feature_dim': features_data['feats'].shape[2],
-                'layer_names': features_data['layer_names']
+                'layer_names': features_data['layer_names'],
+                'feature_dims': features_data.get('feature_dims', {}),
+                'max_feature_dim': features_data['feats'].shape[2]
             }
         }
         
