@@ -84,6 +84,44 @@ class MesoscopicAnalysis:
         # Generate visualizations
         self.visualize_mesoscopic_analysis(results, model_name)
         
+        return results
+        
+    def analyze_model_from_features(self, features_data, model_name, dataset_name):
+        """Analyze model using pre-extracted features data"""
+        features = features_data['feats']  # [N, L, D]
+        
+        if len(features.shape) == 2:
+            features = features.unsqueeze(1)
+            
+        results = {
+            'model': model_name,
+            'dataset': dataset_name,
+            'layers': {},
+            'evolution': {}
+        }
+        
+        # 1. Compute empirical NTK for each layer
+        print("  Computing empirical NTK...")
+        ntk_analysis = self.compute_ntk_spectrum(features)
+        results['ntk'] = ntk_analysis
+        
+        # 2. Analyze feature evolution across layers
+        print("  Analyzing feature evolution...")
+        evolution_analysis = self.analyze_feature_evolution(features)
+        results['evolution'] = evolution_analysis
+        
+        # 3. Compute feature dynamics metrics
+        print("  Computing feature dynamics...")
+        dynamics_analysis = self.compute_feature_dynamics(features)
+        results['dynamics'] = dynamics_analysis
+        
+        # 4. Analyze representational change
+        print("  Analyzing representational change...")
+        repr_change = self.analyze_representational_change(features)
+        results['representational_change'] = repr_change
+        
+        return results
+        
     def compute_ntk_spectrum(self, features):
         """Compute empirical NTK and analyze its spectrum"""
         ntk_results = {'layers': {}}

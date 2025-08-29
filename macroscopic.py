@@ -85,6 +85,45 @@ class MacroscopicAnalysis:
         # Generate visualizations
         self.visualize_macroscopic_analysis(results, model_name)
         
+        return results
+        
+    def analyze_model_from_features(self, features_data, model_name, dataset_name):
+        """Analyze model using pre-extracted features data"""
+        features = features_data['feats']  # [N, L, D]
+        
+        if len(features.shape) == 2:
+            features = features.unsqueeze(1)
+            
+        results = {
+            'model': model_name,
+            'dataset': dataset_name,
+            'information_flow': {},
+            'phase_analysis': {},
+            'critical_transitions': {}
+        }
+        
+        # 1. Information bottleneck analysis
+        print("  Computing information bottleneck trajectories...")
+        ib_analysis = self.compute_information_bottleneck_trajectory(features)
+        results['information_flow'] = ib_analysis
+        
+        # 2. Phase transition detection
+        print("  Detecting phase transitions...")
+        phase_analysis = self.detect_phase_transitions(ib_analysis)
+        results['phase_analysis'] = phase_analysis
+        
+        # 3. Critical layer identification
+        print("  Identifying critical layers...")
+        critical_layers = self.identify_critical_layers(features, ib_analysis)
+        results['critical_transitions'] = critical_layers
+        
+        # 4. Information dynamics analysis
+        print("  Analyzing information dynamics...")
+        info_dynamics = self.analyze_information_dynamics(features, ib_analysis)
+        results['information_dynamics'] = info_dynamics
+        
+        return results
+        
     def compute_information_bottleneck_trajectory(self, features):
         """Compute full IB trajectory across layers"""
         num_layers = features.shape[1]
