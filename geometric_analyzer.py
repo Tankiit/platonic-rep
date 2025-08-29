@@ -64,7 +64,7 @@ class GeometricAnalyzer:
         all_representations = {name: [] for name in representations}
         
         with torch.no_grad():
-            for batch_idx, (x, y) in enumerate(tqdm(data_loader, desc="Extracting representations")):
+            for batch_idx, (x, y) in enumerate(tqprogress(data_loader, desc="Extracting representations")):
                 if batch_idx >= 10:  # Limit batches
                     break
                     
@@ -234,6 +234,8 @@ class GeometricAnalyzer:
         
         properties['mean_nn_distance'] = np.mean(nn_distances)
         properties['local_density_variation'] = np.std(nn_distances) / (np.mean(nn_distances) + 1e-10)
+        
+        return properties
         
         return properties
     
@@ -1508,9 +1510,8 @@ def parse_arguments():
                        help='Number of output classes')
     
     # Dataset arguments  
-    parser.add_argument('--dataset', type=str, default='imagenet',
-                       choices=['imagenet', 'cifar10', 'cifar100'],
-                       help='Dataset to use')
+    parser.add_argument('--dataset', type=str, default='cifar10',
+                       help='Dataset to use (imagenet, cifar10, cifar100, mnist, fashionmnist, svhn, stl10, places365, food101, oxford_pets, flowers102, caltech101, caltech256, dtd, or custom dataset name in data_dir)')
     
     parser.add_argument('--data_dir', type=str, default='/Users/tanmoy/research/data',
                        help='Directory containing datasets')
@@ -1573,7 +1574,7 @@ if __name__ == "__main__":
     print(f"  Pretrained: {args.pretrained}")
     
     # Create data loader
-    data_loader = create_standard_data_loader(
+    data_loader, dataset_num_classes = create_comprehensive_data_loader(
         data_dir=args.data_dir,
         dataset=args.dataset,
         batch_size=args.batch_size,
@@ -1582,7 +1583,10 @@ if __name__ == "__main__":
         split=args.split
     )
     
-    print(f"✓ Data loader created: {len(data_loader.dataset)} samples")
+    # Update num_classes from dataset if not explicitly set
+    if args.num_classes == 1000 and dataset_num_classes != 1000:
+        args.num_classes = dataset_num_classes
+        print(f"Updated num_classes to {args.num_classes} based on dataset")
     
     # Run analysis based on mode
     if args.analyze_phases:
@@ -1698,17 +1702,12 @@ if __name__ == "__main__":
             
             print(f"Results saved to {results_dir}")
         
-        print(f"\n🎯 Multi-Phase Analysis Complete!")
-        print(f"Key Research Questions Answered:")
+        
         
         insights = research_insights
         summary = insights['summary']
         
-        print(f"  1. Lowest intrinsic dimension: {summary['lowest_intrinsic_dimension']}")
-        print(f"  2. Most balanced curvature: {summary['most_balanced_curvature']}")
-        print(f"  3. Highest spectral entropy: {summary['highest_spectral_entropy']}")
         
-        print(f"\n📈 Phase Rankings:")
         for metric, ranking in summary['phase_rankings'].items():
             print(f"  {metric}: {' > '.join(ranking)}")
         
@@ -1721,8 +1720,6 @@ if __name__ == "__main__":
         
     else:
         # Load single model
-        if args.checkpoint_path:
-            model = load_model_from_checkpoint(args.checkpoint_path, num_classes=args.num_classes)
         elif args.use_timm:
             model = load_model_with_timm(args.model, args.num_classes, args.pretrained)
         else:
@@ -2019,7 +2016,7 @@ def analyze_phase_research_questions(phase_results):
         layer_names = list(metrics.keys())
         
         # Average intrinsic dimensions across layers
-        pca_90_dims = [metrics[l]['intrinsic_dim']['pca_90'] for l in layer_names]
+        pca_90_dims = [ metrics[l]['intrinsic_dim']['pca_90'] for l in layer_names]
         mle_dims = [metrics[l]['intrinsic_dim']['mle'] for l in layer_names]
         
         avg_pca_dim = np.mean(pca_90_dims)
@@ -2268,7 +2265,7 @@ def demo_phase_analysis():
     print(f"✓ Chaotic model: {chaotic_model.phase} phase, scale={chaotic_model.scale_factor}")
     
     # Create test data using CIFAR-10
-    data_loader = create_standard_data_loader(
+    data_loader, _ = create_comprehensive_data_loader(
         dataset='cifar10', batch_size=32, split='val'
     )
     
@@ -2301,7 +2298,7 @@ def demo_phase_analysis():
     
     lazy_metrics = extract_key_metrics(lazy_geom)
     aligned_metrics = extract_key_metrics(aligned_geom)
-    chaotic_metrics = extract_key_metrics(chaotic_geom)
+    chaotic_metrics = extract_key_metrics(chaotic_geom);
     
     # Answer key research questions:
     print("\n🔍 Key Research Questions:")
@@ -2346,60 +2343,286 @@ def demo_phase_analysis():
     }
 
 
-def create_standard_data_loader(data_dir="/Users/tanmoy/research/data", dataset="imagenet", 
-                               batch_size=64, num_workers=4, image_size=224, split="val"):
-    """Create data loader using standard torchvision datasets"""
+def get_dataset_transforms(dataset_name, image_size=224, split="val"):
+    """Get appropriate transforms for different datasets"""
     try:
         import torchvision.transforms as transforms
-        import torchvision.datasets as datasets
-        
-        # Standard ImageNet transforms
-        if split == "train":
+    except ImportError:
+        raise ImportError("torchvision not found. Install with: pip install torchvision")
+    
+    # Dataset-specific normalization values
+    normalization = {
+        'imagenet': {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]},
+        'cifar10': {'mean': [0.4914, 0.4822, 0.4465], 'std': [0.2023, 0.1994, 0.2010]},
+        'cifar100': {'mean': [0.5071, 0.4867, 0.4408], 'std': [0.2675, 0.2565, 0.2761]},
+        'mnist': {'mean': [0.1307], 'std': [0.3081]},
+        'fashionmnist': {'mean': [0.2860], 'std': [0.3530]},
+        'svhn': {'mean': [0.4377, 0.4438, 0.4728], 'std': [0.1980, 0.2010, 0.1970]},
+        'stl10': {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]},
+        'places365': {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]},
+        'food101': {'mean': [0.485, 0.456, 0.406], 'std': [0.229, 0.224, 0.225]},
+    }
+    
+    # Get normalization values (default to ImageNet)
+    norm_vals = normalization.get(dataset_name.lower(), normalization['imagenet'])
+    
+    # Training transforms (with augmentation)
+    if split == "train":
+        if dataset_name.lower() in ['mnist', 'fashionmnist']:
+            transform = transforms.Compose([
+                transforms.Resize((image_size, image_size)),
+                transforms.RandomRotation(10),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=norm_vals['mean'], std=norm_vals['std'])
+            ])
+        elif dataset_name.lower() in ['cifar10', 'cifar100', 'svhn']:
+            transform = transforms.Compose([
+                transforms.Resize((image_size, image_size)),
+                transforms.RandomHorizontalFlip(),
+                transforms.RandomRotation(10),
+                transforms.ColorJitter(0.1, 0.1, 0.1, 0.1),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=norm_vals['mean'], std=norm_vals['std'])
+            ])
+        else:  # ImageNet and similar
             transform = transforms.Compose([
                 transforms.RandomResizedCrop(image_size),
                 transforms.RandomHorizontalFlip(),
+                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                   std=[0.229, 0.224, 0.225])
+                transforms.Normalize(mean=norm_vals['mean'], std=norm_vals['std'])
             ])
-        else:
+    
+    # Validation/test transforms (no augmentation)
+    else:
+        if dataset_name.lower() in ['mnist', 'fashionmnist']:
+            transform = transforms.Compose([
+                transforms.Resize((image_size, image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=norm_vals['mean'], std=norm_vals['std'])
+            ])
+        elif dataset_name.lower() in ['cifar10', 'cifar100', 'svhn']:
+            transform = transforms.Compose([
+                transforms.Resize((image_size, image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=norm_vals['mean'], std=norm_vals['std'])
+            ])
+        else:  # ImageNet and similar
             transform = transforms.Compose([
                 transforms.Resize(int(image_size * 1.14)),
                 transforms.CenterCrop(image_size),
                 transforms.ToTensor(),
-                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
-                                   std=[0.229, 0.224, 0.225])
+                transforms.Normalize(mean=norm_vals['mean'], std=norm_vals['std'])
             ])
-        
-        # Create dataset
-        if dataset.lower() == "imagenet":
-            dataset_obj = datasets.ImageFolder(
-                root=os.path.join(data_dir, split),
-                transform=transform
-            )
-        elif dataset.lower() == "cifar10":
-            train = (split == "train")
-            dataset_obj = datasets.CIFAR10(
-                root=data_dir, train=train, download=True, transform=transform
-            )
-        elif dataset.lower() == "cifar100":
-            train = (split == "train") 
-            dataset_obj = datasets.CIFAR100(
-                root=data_dir, train=train, download=True, transform=transform
-            )
-        else:
-            raise ValueError(f"Unsupported dataset: {dataset}")
-        
-        # Create data loader
-        data_loader = torch.utils.data.DataLoader(
-            dataset_obj,
-            batch_size=batch_size,
-            shuffle=(split == "train"),
-            num_workers=num_workers,
-            pin_memory=True
-        )
-        
-        return data_loader
-        
+    
+    return transform
+
+
+def create_comprehensive_data_loader(data_dir="/Users/tanmoy/research/data", dataset="imagenet", 
+                                   batch_size=64, num_workers=4, image_size=224, split="val",
+                                   download=True, shuffle=None):
+    """
+    Create comprehensive data loader supporting many datasets
+    
+    Args:
+        data_dir: Root data directory
+        dataset: Dataset name
+        batch_size: Batch size
+        num_workers: Number of worker processes
+        image_size: Target image size
+        split: Dataset split ('train', 'val', 'test')
+        download: Whether to download dataset if not found
+        shuffle: Whether to shuffle data (None = auto based on split)
+    
+    Returns:
+        data_loader: PyTorch DataLoader
+        num_classes: Number of classes in dataset
+    """
+    try:
+        import torchvision.transforms as transforms
+        import torchvision.datasets as datasets
     except ImportError:
         raise ImportError("torchvision not found. Install with: pip install torchvision")
+    
+    # Auto-determine shuffle if not specified
+    if shuffle is None:
+        shuffle = (split == "train")
+    
+    # Get appropriate transforms
+    transform = get_dataset_transforms(dataset, image_size, split)
+    
+    dataset_name = dataset.lower()
+    
+    # Standard torchvision datasets
+    if dataset_name == "imagenet":
+        if split == "val":
+            split_dir = "val"
+        elif split == "train":
+            split_dir = "train"
+        else:
+            split_dir = split
+            
+        dataset_obj = datasets.ImageFolder(
+            root=os.path.join(data_dir, "imagenet", split_dir),
+            transform=transform
+        )
+        num_classes = 1000
+    
+    elif dataset_name == "cifar10":
+        train = (split == "train")
+        dataset_obj = datasets.CIFAR10(
+            root=data_dir, train=train, download=download, transform=transform
+        )
+        num_classes = 10
+    
+    elif dataset_name == "cifar100":
+        train = (split == "train")
+        dataset_obj = datasets.CIFAR100(
+            root=data_dir, train=train, download=download, transform=transform
+        )
+        num_classes = 100
+    
+    elif dataset_name == "mnist":
+        train = (split == "train")
+        dataset_obj = datasets.MNIST(
+            root=data_dir, train=train, download=download, transform=transform
+        )
+        num_classes = 10
+    
+    elif dataset_name == "fashionmnist":
+        train = (split == "train")
+        dataset_obj = datasets.FashionMNIST(
+            root=data_dir, train=train, download=download, transform=transform
+        )
+        num_classes = 10
+    
+    elif dataset_name == "svhn":
+        if split == "train":
+            split_name = "train"
+        elif split == "val" or split == "test":
+            split_name = "test"
+        else:
+            split_name = split
+            
+        dataset_obj = datasets.SVHN(
+            root=data_dir, split=split_name, download=download, transform=transform
+        )
+        num_classes = 10
+    
+    elif dataset_name == "stl10":
+        if split == "val":
+            split_name = "test"
+        else:
+            split_name = split
+            
+        dataset_obj = datasets.STL10(
+            root=data_dir, split=split_name, download=download, transform=transform
+        )
+        num_classes = 10
+    
+    elif dataset_name == "places365":
+        small = True  # Use Places365-Standard (small version)
+        train = (split == "train")
+        dataset_obj = datasets.Places365(
+            root=data_dir, split="train-standard" if train else "val", 
+            small=small, download=download, transform=transform
+        )
+        num_classes = 365
+    
+    elif dataset_name == "food101":
+        train = (split == "train")
+        dataset_obj = datasets.Food101(
+            root=data_dir, split="train" if train else "test",
+            download=download, transform=transform
+        )
+        num_classes = 101
+    
+    elif dataset_name == "oxford_pets":
+        train = (split == "train")
+        dataset_obj = datasets.OxfordIIITPet(
+            root=data_dir, split="trainval" if train else "test",
+            download=download, transform=transform, target_type="category"
+        )
+        num_classes = 37
+    
+    elif dataset_name == "flowers102":
+        if split == "train":
+            split_name = "train"
+        elif split == "val":
+            split_name = "val" 
+        else:
+            split_name = "test"
+            
+        dataset_obj = datasets.Flowers102(
+            root=data_dir, split=split_name, download=download, transform=transform
+        )
+        num_classes = 102
+    
+    elif dataset_name == "caltech101":
+        dataset_obj = datasets.Caltech101(
+            root=data_dir, download=download, transform=transform
+        )
+        num_classes = 101
+    
+    elif dataset_name == "caltech256":
+        dataset_obj = datasets.Caltech256(
+            root=data_dir, download=download, transform=transform
+        )
+        num_classes = 256
+    
+    elif dataset_name == "dtd":  # Describable Textures Dataset
+        train = (split == "train")
+        dataset_obj = datasets.DTD(
+            root=data_dir, split="train" if train else "test",
+            download=download, transform=transform
+        )
+        num_classes = 47
+    
+    # Custom dataset from directory structure
+    elif os.path.isdir(os.path.join(data_dir, dataset_name)):
+        dataset_path = os.path.join(data_dir, dataset_name)
+        
+        # Try to find split subdirectory
+        if os.path.isdir(os.path.join(dataset_path, split)):
+            dataset_path = os.path.join(dataset_path, split)
+        elif os.path.isdir(os.path.join(dataset_path, "train")) and split == "val":
+            # Check for val directory, fallback to test
+            if os.path.isdir(os.path.join(dataset_path, "val")):
+                dataset_path = os.path.join(dataset_path, "val")
+            elif os.path.isdir(os.path.join(dataset_path, "test")):
+                dataset_path = os.path.join(dataset_path, "test")
+        
+        dataset_obj = datasets.ImageFolder(
+            root=dataset_path,
+            transform=transform
+        )
+        num_classes = len(dataset_obj.classes)
+        print(f"Found custom dataset '{dataset}' with {num_classes} classes: {dataset_obj.classes[:10]}{'...' if num_classes > 10 else ''}")
+    
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset}. Supported datasets: imagenet, cifar10, cifar100, mnist, fashionmnist, svhn, stl10, places365, food101, oxford_pets, flowers102, caltech101, caltech256, dtd, or custom ImageFolder in {data_dir}/{dataset}")
+    
+    # Create data loader
+    data_loader = torch.utils.data.DataLoader(
+        dataset_obj,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        num_workers=num_workers,
+        pin_memory=True,
+        drop_last=False
+    )
+    
+    print(f"✓ Loaded {dataset.upper()} dataset: {len(dataset_obj)} samples, {num_classes} classes")
+    
+    return data_loader, num_classes
+
+
+# Legacy function for backward compatibility
+def create_standard_data_loader(data_dir="/Users/tanmoy/research/data", dataset="imagenet", 
+                               batch_size=64, num_workers=4, image_size=224, split="val"):
+    """Legacy function - use create_comprehensive_data_loader instead"""
+    data_loader, _ = create_comprehensive_data_loader(
+        data_dir=data_dir, dataset=dataset, batch_size=batch_size,
+        num_workers=num_workers, image_size=image_size, split=split
+    )
+    return data_loader
