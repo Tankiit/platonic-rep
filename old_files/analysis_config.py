@@ -86,7 +86,7 @@ SELECTED_MODELS = [
     'resnet18',           # ResNet architecture
     'vit_base_patch16_224',  # Vision Transformer  
     'convnext_tiny',      # ConvNeXt (CNN)
-    'mlp_mixer_b16_224'   # MLP-Mixer
+    'mixer_b16_224'   # MLP-Mixer
 ]
 
 SELECTED_DATASETS = [

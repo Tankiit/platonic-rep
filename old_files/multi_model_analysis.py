@@ -31,6 +31,7 @@ from torchvision.models.feature_extraction import create_feature_extractor
 # Import our analysis modules
 from macroscopic import MacroscopicAnalysis
 from mesoscopic import MesoscopicAnalysis
+from cross_modal_phase_analysis import CrossModalPhaseAnalyzer
 
 class NumpyEncoder(json.JSONEncoder):
     """Custom JSON encoder for numpy types"""
@@ -70,7 +71,7 @@ class MultiModelAnalyzer:
         
         # Supported model architectures
         self.supported_models = {
-            'mlp': ['mlp_mixer_b16_224', 'mlp_mixer_b32_224'],
+            'mlp': ['mixer_b16_224', 'mixer_b32_224'],
             'cnn': ['convnext_tiny', 'convnext_small', 'efficientnet_b0'],
             'resnet': ['resnet18', 'resnet34', 'resnet50'],
             'vit': ['vit_base_patch16_224', 'vit_small_patch16_224', 'deit_base_patch16_224']
@@ -97,6 +98,11 @@ class MultiModelAnalyzer:
             'total_samples_processed': 0,
             'analysis_duration': 0
         }
+        
+        # Initialize cross-modal phase analyzer
+        self.cross_modal_analyzer = CrossModalPhaseAnalyzer(
+            output_dir=self.output_dir / "cross_modal_analysis"
+        )
         
     def get_available_models(self, model_type: str = None) -> List[str]:
         """Get list of available models from timm"""
@@ -150,6 +156,20 @@ class MultiModelAnalyzer:
     def get_feature_extractor(self, model: torch.nn.Module, model_name: str) -> torch.nn.Module:
         """Create feature extractor for different model architectures"""
         try:
+            # Debug: print model structure for MLP-Mixer
+            if 'mixer' in model_name.lower():
+                print(f"  Debug: MLP-Mixer model attributes:")
+                print(f"    - hasattr(model, 'blocks'): {hasattr(model, 'blocks')}")
+                if hasattr(model, 'blocks'):
+                    print(f"    - len(model.blocks): {len(model.blocks)}")
+                print(f"    - hasattr(model, 'mixer_blocks'): {hasattr(model, 'mixer_blocks')}")
+                if hasattr(model, 'mixer_blocks'):
+                    print(f"    - len(model.mixer_blocks): {len(model.mixer_blocks)}")
+                print(f"    - hasattr(model, 'layers'): {hasattr(model, 'layers')}")
+                if hasattr(model, 'layers'):
+                    print(f"    - len(model.layers): {len(model.layers)}")
+                print(f"    - Model type: {type(model)}")
+                print(f"    - Available attributes: {[attr for attr in dir(model) if not attr.startswith('_')]}")
             if 'resnet' in model_name.lower():
                 # ResNet: extract features after each stage
                 return_nodes = {
@@ -170,10 +190,22 @@ class MultiModelAnalyzer:
                     'stages.2': 'stage3',
                     'stages.3': 'stage4'
                 }
-            elif 'mlp_mixer' in model_name.lower():
+            elif 'mixer' in model_name.lower():
                 # MLP-Mixer: extract features after each mixer block
-                num_blocks = len(model.blocks)
-                return_nodes = {f'blocks.{i}': f'block_{i}' for i in range(num_blocks)}
+                try:
+                    num_blocks = len(model.blocks)
+                    return_nodes = {f'blocks.{i}': f'block_{i}' for i in range(num_blocks)}
+                except AttributeError:
+                    # Fallback: try different attribute names for MLP-Mixer
+                    if hasattr(model, 'mixer_blocks'):
+                        num_blocks = len(model.mixer_blocks)
+                        return_nodes = {f'mixer_blocks.{i}': f'block_{i}' for i in range(num_blocks)}
+                    elif hasattr(model, 'layers'):
+                        num_blocks = len(model.layers)
+                        return_nodes = {f'layers.{i}': f'layer_{i}' for i in range(num_blocks)}
+                    else:
+                        # Last resort: use the model itself
+                        return_nodes = {'': 'output'}
             else:
                 # Default: try to extract from common layer names
                 return_nodes = {
@@ -258,9 +290,13 @@ class MultiModelAnalyzer:
                         if layer_name not in all_features:
                             all_features[layer_name] = []
                         
-                        # Global average pooling for spatial features
-                        if len(layer_features.shape) == 4:  # [B, C, H, W]
+                        # Handle different feature shapes
+                        if len(layer_features.shape) == 4:  # [B, C, H, W] - CNN features
+                            # Global average pooling for spatial features
                             layer_features = torch.nn.functional.adaptive_avg_pool2d(layer_features, 1).squeeze(-1).squeeze(-1)
+                        elif len(layer_features.shape) == 3:  # [B, S, D] - ViT/Transformer features
+                            # For ViT: average over sequence dimension (patches)
+                            layer_features = torch.mean(layer_features, dim=1)  # [B, D]
                         
                         # Debug: print layer info for first batch
                         if batch_idx == 0:
@@ -415,6 +451,110 @@ class MultiModelAnalyzer:
         print(f"Analysis duration: {analysis_duration:.2f} seconds")
         
         return combined_results
+    
+    def run_cross_modal_phase_analysis(self, vision_models: List[str], text_models: List[str], 
+                                     dataset: str = 'cifar10', pretrained: bool = True,
+                                     model_pairs: List[Tuple[str, str]] = None) -> Dict:
+        """
+        Run cross-modal phase diagram analysis for vision-text model pairs
+        
+        Args:
+            vision_models: List of vision model names to analyze
+            text_models: List of text model names to analyze
+            dataset: Dataset to use for analysis
+            pretrained: Whether to use pretrained models
+            model_pairs: Specific model pairs to analyze (if None, analyze all combinations)
+            
+        Returns:
+            Cross-modal phase analysis results
+        """
+        print(f"\n=== Running Cross-Modal Phase Analysis ===")
+        print(f"Vision models: {vision_models}")
+        print(f"Text models: {text_models}")
+        print(f"Dataset: {dataset}")
+        
+        # Extract features for vision models
+        vision_features = {}
+        for model_name in vision_models:
+            print(f"Extracting features for vision model: {model_name}")
+            result = self.run_analysis(model_name, dataset, pretrained, save_features=True)
+            if result and 'metadata' in result:
+                # Load the saved features
+                features_path = self.output_dir / f"{model_name}_{dataset}_features.pt"
+                if features_path.exists():
+                    features_data = torch.load(features_path)
+                    # Use the final layer features for cross-modal analysis
+                    final_layer_features = features_data['feats'][:, -1, :]  # Last layer
+                    vision_features[model_name] = final_layer_features
+                    print(f"  Loaded features: {final_layer_features.shape}")
+                else:
+                    print(f"  Warning: Features file not found at {features_path}")
+            else:
+                print(f"  Warning: Analysis failed for {model_name}")
+        
+        # For text models, we'll create synthetic features for demonstration
+        # In practice, you would extract these from actual text models
+        text_features = {}
+        for model_name in text_models:
+            print(f"Creating synthetic features for text model: {model_name}")
+            # Create synthetic text features with appropriate dimensions
+            if 'bert' in model_name.lower():
+                dim = 768
+            elif 'gpt' in model_name.lower():
+                dim = 1024
+            else:
+                dim = 512
+            
+            # Use the same number of samples as vision features
+            num_samples = min([feat.shape[0] for feat in vision_features.values()]) if vision_features else 100
+            text_features[model_name] = torch.randn(num_samples, dim)
+            print(f"  Created synthetic features: {text_features[model_name].shape}")
+        
+        # Run cross-modal phase analysis
+        cross_modal_results = self.cross_modal_analyzer.analyze_cross_modal_representations(
+            vision_features, text_features, model_pairs
+        )
+        
+        # Log to TensorBoard
+        if self.writer:
+            self._log_cross_modal_results(cross_modal_results)
+        
+        print(f"Cross-modal phase analysis complete!")
+        return cross_modal_results
+    
+    def _log_cross_modal_results(self, cross_modal_results: Dict):
+        """Log cross-modal analysis results to TensorBoard"""
+        if not self.writer:
+            return
+        
+        # Log summary metrics
+        summary = cross_modal_results.get('summary', {})
+        avg_metrics = summary.get('average_metrics', {})
+        
+        self.writer.add_scalar('cross_modal/avg_ntk_stability', 
+                              avg_metrics.get('avg_ntk_stability', 0))
+        self.writer.add_scalar('cross_modal/avg_agop_magnitude', 
+                              avg_metrics.get('avg_agop_magnitude', 0))
+        self.writer.add_scalar('cross_modal/avg_alignment', 
+                              avg_metrics.get('avg_alignment', 0))
+        
+        # Log phase distribution
+        phase_dist = summary.get('phase_distribution', {})
+        for phase, count in phase_dist.items():
+            self.writer.add_scalar(f'cross_modal/phase_distribution/{phase}', count)
+        
+        # Log individual model pair results
+        phase_results = cross_modal_results.get('phase_results', [])
+        for result in phase_results:
+            pair_name = f"{result['v_model']}_{result['t_model']}"
+            self.writer.add_scalar(f'cross_modal/pairs/{pair_name}/ntk_stability', 
+                                  result['ntk_stability'])
+            self.writer.add_scalar(f'cross_modal/pairs/{pair_name}/agop_magnitude', 
+                                  result['agop_magnitude'])
+            self.writer.add_scalar(f'cross_modal/pairs/{pair_name}/alignment', 
+                                  result['alignment'])
+        
+        self.writer.flush()
     
     def _log_analysis_results(self, results: Dict, model_name: str, dataset: str):
         """Log analysis results to TensorBoard"""
@@ -812,7 +952,7 @@ def main():
     
     # Model selection
     parser.add_argument('--models', nargs='+', 
-                       default=['resnet18', 'vit_base_patch16_224', 'convnext_tiny', 'mlp_mixer_b16_224'],
+                       default=['resnet18', 'vit_base_patch16_224', 'convnext_tiny', 'mixer_b16_224'],
                        help='List of models to analyze')
     
     # Dataset selection
@@ -829,6 +969,16 @@ def main():
     
     parser.add_argument('--output_dir', type=str, default='./results/multi_model_analysis/',
                        help='Output directory for results')
+    
+    # Cross-modal analysis options
+    parser.add_argument('--cross_modal', action='store_true',
+                       help='Run cross-modal phase analysis')
+    parser.add_argument('--vision_models', nargs='+', 
+                       default=['resnet18', 'vit_base_patch16_224', 'convnext_tiny'],
+                       help='Vision models for cross-modal analysis')
+    parser.add_argument('--text_models', nargs='+', 
+                       default=['bert_base', 'roberta_base', 'gpt2_medium'],
+                       help='Text models for cross-modal analysis')
     
     args = parser.parse_args()
     
@@ -857,6 +1007,17 @@ def main():
         pretrained=args.pretrained,
         device=args.device
     )
+    
+    # Run cross-modal analysis if requested
+    if args.cross_modal:
+        print(f"\n=== Running Cross-Modal Phase Analysis ===")
+        cross_modal_results = analyzer.run_cross_modal_phase_analysis(
+            vision_models=args.vision_models,
+            text_models=args.text_models,
+            dataset=args.datasets[0] if args.datasets else 'cifar10',
+            pretrained=args.pretrained
+        )
+        print(f"Cross-modal analysis results saved to: {args.output_dir}/cross_modal_analysis/")
     
     print(f"\nAnalysis complete! Results saved to {args.output_dir}")
     return results

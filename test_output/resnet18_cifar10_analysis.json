@@ -1,0 +1,230 @@
+{
+  "model": "resnet18",
+  "dataset": "cifar10",
+  "pretrained": false,
+  "macroscopic": {
+    "model": "resnet18",
+    "dataset": "cifar10",
+    "information_flow": {
+      "layers": {
+        "layer_0": {
+          "I_X_T": 0.037096363652545754,
+          "I_Y_T": 0.1,
+          "H_T": -5.2872485932851045,
+          "efficiency": 2.6956093413160276,
+          "compression": 4.767825307965767,
+          "layer_idx": 0
+        },
+        "layer_1": {
+          "I_X_T": NaN,
+          "I_Y_T": 0.1,
+          "H_T": -5.2455836676833805,
+          "efficiency": NaN,
+          "compression": NaN,
+          "layer_idx": 1
+        },
+        "layer_2": {
+          "I_X_T": 0.03595079831448816,
+          "I_Y_T": 0.1,
+          "H_T": -5.438579273202009,
+          "efficiency": 2.7815020301696887,
+          "compression": 4.651471853134202,
+          "layer_idx": 2
+        },
+        "layer_3": {
+          "I_X_T": NaN,
+          "I_Y_T": 0.1,
+          "H_T": -5.7605717120198,
+          "efficiency": NaN,
+          "compression": NaN,
+          "layer_idx": 3
+        }
+      },
+      "summary": {
+        "initial_state": {
+          "I_X_T": 0.037096363652545754,
+          "I_Y_T": 0.1
+        },
+        "final_state": {
+          "I_X_T": NaN,
+          "I_Y_T": 0.1
+        },
+        "total_compression": NaN,
+        "total_task_info_gain": 0.0,
+        "peak_task_info": 0.1,
+        "peak_task_info_layer": 0
+      }
+    },
+    "phase_analysis": {
+      "compression_start_layer": null,
+      "phase_transition_layer": null,
+      "has_compression_phase": false,
+      "phases": [
+        {
+          "name": "fitting",
+          "start": 0,
+          "end": 1,
+          "description": "Both I(X;T) and I(Y;T) increase"
+        }
+      ]
+    },
+    "critical_transitions": [
+      {
+        "layer": 0,
+        "type": "max_task_information",
+        "value": 0.1
+      },
+      {
+        "layer": 1,
+        "type": "max_efficiency",
+        "value": NaN
+      }
+    ],
+    "information_dynamics": {
+      "velocity": {
+        "I_X_T": [
+          NaN,
+          NaN,
+          NaN
+        ],
+        "I_Y_T": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "mean_speed": NaN
+      },
+      "acceleration": {
+        "I_X_T": [
+          NaN,
+          NaN
+        ],
+        "I_Y_T": [
+          0.0,
+          0.0
+        ]
+      },
+      "path_length": NaN,
+      "straightness": 1
+    }
+  },
+  "mesoscopic": {
+    "model": "resnet18",
+    "dataset": "cifar10",
+    "layers": {},
+    "evolution": {
+      "layer_similarity": [
+        0.9535138010978699,
+        0.9837217330932617,
+        0.967271089553833
+      ],
+      "feature_drift": [
+        1.772438406944275,
+        1.9833245277404785,
+        1.8037667274475098
+      ],
+      "representation_speed": [
+        1.772438406944275,
+        1.9833245277404785,
+        1.8037667274475098
+      ],
+      "convergence_metrics": {
+        "convergence_rate": 0.9681688745816549,
+        "is_converged": true,
+        "stable_from_layer": 0
+      }
+    },
+    "ntk": {
+      "layers": {
+        "layer_0": {
+          "top_eigenvalue": 2.2345688343048096,
+          "effective_rank": 1.7407691453978529,
+          "spectral_decay_rate": 4.323641826353395,
+          "kernel_alignment": 1.0000001018281637,
+          "eigenvalue_gap": 0.6781495213508606
+        },
+        "layer_1": {
+          "top_eigenvalue": 2.907360792160034,
+          "effective_rank": 1.3542787921951895,
+          "spectral_decay_rate": 3.277920846942997,
+          "kernel_alignment": 1.0000000161656122,
+          "eigenvalue_gap": 0.8676689863204956
+        },
+        "layer_2": {
+          "top_eigenvalue": 2.721782684326172,
+          "effective_rank": 1.246909460965132,
+          "spectral_decay_rate": 2.952426065060591,
+          "kernel_alignment": 1.000000389413609,
+          "eigenvalue_gap": 0.9085046648979187
+        },
+        "layer_3": {
+          "top_eigenvalue": 2.6315195560455322,
+          "effective_rank": 1.1880595758148182,
+          "spectral_decay_rate": 2.619022999864544,
+          "kernel_alignment": 0.9999995051090415,
+          "eigenvalue_gap": 0.9346946477890015
+        }
+      },
+      "evolution": {
+        "rank_compression": 0.3175088270861515,
+        "eigenvalue_concentration": 0.25073477074487155,
+        "spectral_sharpening": 1.1776408565477092
+      }
+    },
+    "dynamics": {
+      "intrinsic_dimension": [
+        4.84118657645314,
+        6.75456681848776,
+        8.198322572460631,
+        11.500909487782165
+      ],
+      "feature_complexity": [
+        2.1580581665039062,
+        2.6704623699188232,
+        3.07594633102417,
+        3.6649980545043945
+      ],
+      "manifold_capacity": [
+        4.84118657645314,
+        6.75456681848776,
+        8.198322572460631,
+        11.500909487782165
+      ]
+    },
+    "representational_change": {
+      "total_displacement": [
+        1.772438406944275,
+        1.9951258897781372,
+        2.0037877559661865
+      ],
+      "angular_change": [
+        1.1378374099731445,
+        1.3576862812042236,
+        1.3878403902053833
+      ],
+      "topology_change": [
+        0.03486508679109823,
+        0.0780005350318963,
+        0.14193364564939015
+      ]
+    }
+  },
+  "metadata": {
+    "num_samples": 576,
+    "num_layers": 4,
+    "feature_dim": 512,
+    "layer_names": [
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4"
+    ],
+    "feature_dims": {
+      "stage1": 64,
+      "stage2": 128,
+      "stage3": 256,
+      "stage4": 512
+    },
+    "max_feature_dim": 512
+  }
+}

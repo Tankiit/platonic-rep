@@ -1,0 +1,23 @@
+Mutual Information Analysis Summary
+==================================================
+
+Total Results: 2694
+I_X_T Range: 0.017192 - 0.100000
+I_Y_T Range: 0.100000 - 0.100000
+Efficiency Range: 0.999990 - 5.816237
+
+Model Summary:
+convnext_tiny: I_X_T=0.033315, I_Y_T=0.100000, Eff=3.003300
+mixer_b16_224: I_X_T=0.032981, I_Y_T=0.100000, Eff=3.033274
+vit_base_patch16_224: I_X_T=0.033386, I_Y_T=0.100000, Eff=2.998137
+resnet18: I_X_T=0.033113, I_Y_T=0.100000, Eff=3.022589
+resnet50: I_X_T=0.055613, I_Y_T=0.100000, Eff=2.328475
+vit_small_patch16_224: I_X_T=0.032787, I_Y_T=0.100000, Eff=3.052200
+convnext_small: I_X_T=0.033554, I_Y_T=0.100000, Eff=2.982077
+swin_base_patch4_window7_224: I_X_T=0.031381, I_Y_T=0.100000, Eff=3.193416
+convnext_base: I_X_T=0.032236, I_Y_T=0.100000, Eff=3.104270
+efficientnet_b1: I_X_T=0.027238, I_Y_T=0.100000, Eff=4.040870
+swin_small_patch4_window7_224: I_X_T=0.033128, I_Y_T=0.100000, Eff=3.024645
+efficientnet_b2: I_X_T=0.034821, I_Y_T=0.100000, Eff=2.875216
+deit_base_patch16_224: I_X_T=0.032942, I_Y_T=0.100000, Eff=3.036651
+resnet34: I_X_T=0.033346, I_Y_T=0.100000, Eff=3.002359

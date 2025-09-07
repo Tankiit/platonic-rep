@@ -46,6 +46,138 @@ class GeometricAnalyzer:
         
     def extract_representations(self, model, data_loader, layers=None):
         """Extract representations from specified layers"""
+        if 'mps' in str(self.device):
+            return self._extract_representations_streaming(model, data_loader, layers)
+        else:
+            return self._extract_representations_standard(model, data_loader, layers)
+    
+    def _extract_representations_streaming(self, model, data_loader, layers=None, max_samples=200):
+        """Streaming representation extraction for MPS using feature extractor - no hooks!"""
+        print(f"🔍 MPS: Using feature extractor (no hooks) with max_samples={max_samples}")
+        
+        try:
+            from torchvision.models.feature_extraction import create_feature_extractor, get_graph_node_names
+        except ImportError:
+            print("🔍 MPS: Falling back to timm forward_features")
+            return self._extract_with_timm_features(model, data_loader, max_samples)
+        
+        # Get available nodes
+        try:
+            _, eval_nodes = get_graph_node_names(model)
+            print(f"🔍 MPS: Found {len(eval_nodes)} available nodes")
+            
+            # Select only key layers for MPS to minimize memory
+            return_nodes = {}
+            key_patterns = ['layer1', 'layer2', 'layer3', 'layer4', 'fc', 'classifier']
+            
+            for node in eval_nodes:
+                for pattern in key_patterns:
+                    if pattern in node and len(return_nodes) < 4:  # Max 4 layers
+                        return_nodes[node] = f"{pattern}_{len(return_nodes)}"
+                        break
+            
+            print(f"🔍 MPS: Selected {len(return_nodes)} key layers: {list(return_nodes.values())}")
+            
+            # Create feature extractor
+            feature_extractor = create_feature_extractor(model, return_nodes=return_nodes)
+            
+        except Exception as e:
+            print(f"🔍 MPS: Feature extractor failed ({e}), using timm fallback")
+            return self._extract_with_timm_features(model, data_loader, max_samples)
+        
+        # Extract features with minimal memory usage
+        final_representations = {}
+        
+        with torch.no_grad():
+            for batch_idx, (x, y) in enumerate(data_loader):
+                if batch_idx >= 5:  # Process 5 batches for more data
+                    break
+                
+                print(f"🔍 MPS: Processing batch {batch_idx}, shape: {x.shape}")
+                
+                # Take more samples for richer analysis
+                batch_size = min(8, x.shape[0])
+                x_small = x[:batch_size].to(self.device)
+                
+                # Extract features
+                features = feature_extractor(x_small)
+                
+                # Process each feature immediately
+                for layer_name, feature_tensor in features.items():
+                    print(f"🔍 MPS: Got {layer_name}: {feature_tensor.shape}")
+                    
+                    # Flatten and move to CPU immediately
+                    if len(feature_tensor.shape) > 2:
+                        feature_flat = feature_tensor.view(feature_tensor.shape[0], -1)
+                    else:
+                        feature_flat = feature_tensor
+                    
+                    feature_cpu = feature_flat.cpu()
+                    
+                    # Random projection if high-dimensional
+                    if feature_cpu.shape[1] > 32:
+                        proj_dim = 16
+                        proj_matrix = torch.randn(feature_cpu.shape[1], proj_dim) / np.sqrt(proj_dim)
+                        feature_cpu = feature_cpu @ proj_matrix
+                        print(f"🔍 MPS: Applied projection {feature_flat.shape[1]} -> {proj_dim}")
+                    
+                    final_representations[layer_name] = feature_cpu
+                
+                # Clear MPS memory immediately
+                del features, x_small
+                torch.mps.empty_cache()
+                break  # Only 1 batch
+        
+        print(f"🔍 MPS: Feature extraction completed with {len(final_representations)} layers")
+        return final_representations
+    
+    def _extract_with_timm_features(self, model, data_loader, max_samples=50):
+        """Fallback using timm's forward_features if available"""
+        final_representations = {}
+        
+        with torch.no_grad():
+            for batch_idx, (x, y) in enumerate(data_loader):
+                if batch_idx >= 5:
+                    break
+                
+                print(f"🔍 MPS: Using timm features, batch {batch_idx}, shape: {x.shape}")
+                batch_size = min(8, x.shape[0])
+                x_small = x[:batch_size].to(self.device)
+                
+                # Try timm's forward_features
+                if hasattr(model, 'forward_features'):
+                    features = model.forward_features(x_small)
+                    print(f"🔍 MPS: Got features: {features.shape}")
+                    
+                    # Flatten
+                    if len(features.shape) > 2:
+                        features_flat = features.view(features.shape[0], -1)
+                    else:
+                        features_flat = features
+                    
+                    features_cpu = features_flat.cpu()
+                    
+                    # Random projection if needed
+                    if features_cpu.shape[1] > 32:
+                        proj_matrix = torch.randn(features_cpu.shape[1], 16) / np.sqrt(16)
+                        features_cpu = features_cpu @ proj_matrix
+                    
+                    final_representations['features'] = features_cpu
+                else:
+                    # Just use final output
+                    output = model(x_small)
+                    if len(output.shape) > 2:
+                        output = output.view(output.shape[0], -1)
+                    final_representations['output'] = output.cpu()
+                
+                # Clear memory
+                torch.mps.empty_cache()
+                break
+        
+        return final_representations
+    
+    def _extract_representations_standard(self, model, data_loader, layers=None):
+        """Standard representation extraction for CUDA/CPU"""
         representations = {}
         
         def get_hook(name):
@@ -54,6 +186,9 @@ class GeometricAnalyzer:
             return hook
         
         # Register hooks
+        if 'mps' in str(self.device):
+            print(f"🔍 MPS CHECKPOINT 2: Registering hooks")
+            
         hooks = []
         hook_names = []
         for name, module in model.named_modules():
@@ -62,31 +197,97 @@ class GeometricAnalyzer:
                     hooks.append(module.register_forward_hook(get_hook(name)))
                     hook_names.append(name)
         
+        if 'mps' in str(self.device):
+            print(f"🔍 MPS CHECKPOINT 3: Registered {len(hooks)} hooks")
+        
         # Collect representations
         all_representations = {name: [] for name in hook_names}
         
         with torch.no_grad():
             for batch_idx, (x, y) in enumerate(tqdm(data_loader, desc="Extracting representations")):
                 # More aggressive batch limiting for MPS
-                max_batches = 3 if self.device == 'mps' else 10
+                max_batches = 3 if 'mps' in str(self.device) else 10
                 if batch_idx >= max_batches:
                     break
+                
+                if 'mps' in str(self.device):
+                    print(f"🔍 MPS CHECKPOINT 4: Processing batch {batch_idx}, shape: {x.shape}")
+                    import psutil
+                    print(f"🔍 Memory usage: {psutil.virtual_memory().percent:.1f}%")
                     
                 x = x.to(self.device)
+                
+                if 'mps' in str(self.device):
+                    print(f"🔍 MPS CHECKPOINT 5: Data moved to MPS")
+                    
                 _ = model(x)
                 
-                for name, rep in representations.items():
-                    all_representations[name].append(rep.cpu())
+                if 'mps' in str(self.device):
+                    print(f"🔍 MPS CHECKPOINT 6: Forward pass completed")
+                
+                # For MPS: process immediately with random projections
+                if 'mps' in str(self.device):
+                    print(f"🔍 MPS CHECKPOINT 7: Processing {len(representations)} representations")
+                    
+                    for i, (name, rep) in enumerate(representations.items()):
+                        print(f"🔍 MPS CHECKPOINT 8.{i}: Processing layer {name}, shape: {rep.shape}")
+                        
+                        rep_cpu = rep.cpu()
+                        print(f"🔍 MPS CHECKPOINT 9.{i}: Moved to CPU")
+                        
+                        if len(rep_cpu.shape) > 2:
+                            rep_cpu = rep_cpu.view(rep_cpu.shape[0], -1)
+                            print(f"🔍 MPS CHECKPOINT 10.{i}: Flattened to {rep_cpu.shape}")
+                        
+                        # Apply random projection to drastically reduce dimensionality
+                        if rep_cpu.shape[1] > 64:  # Only if high-dimensional
+                            if not hasattr(self, '_projection_matrices'):
+                                self._projection_matrices = {}
+                            
+                            if name not in self._projection_matrices:
+                                # Create random projection matrix (original_dim -> 32)
+                                proj_dim = min(32, rep_cpu.shape[1])
+                                self._projection_matrices[name] = torch.randn(rep_cpu.shape[1], proj_dim) / np.sqrt(proj_dim)
+                                print(f"🔍 MPS CHECKPOINT 11.{i}: Created projection matrix {rep_cpu.shape[1]} -> {proj_dim}")
+                            
+                            # Apply projection
+                            rep_cpu = rep_cpu @ self._projection_matrices[name]
+                            print(f"🔍 MPS CHECKPOINT 12.{i}: Applied projection, new shape: {rep_cpu.shape}")
+                        
+                        # Only keep tiny samples
+                        if name not in all_representations:
+                            all_representations[name] = []
+                        if len(all_representations[name]) < 20:  # Even smaller limit
+                            sample_size = min(5, rep_cpu.shape[0])  # Only 5 samples per batch
+                            all_representations[name].append(rep_cpu[:sample_size])
+                            print(f"🔍 MPS CHECKPOINT 13.{i}: Stored {sample_size} samples")
+                    
+                    print(f"🔍 MPS CHECKPOINT 14: Clearing MPS cache")
+                    # Clear MPS cache after each batch
+                    torch.mps.empty_cache()
+                    print(f"🔍 MPS CHECKPOINT 15: Batch {batch_idx} completed")
+                else:
+                    for name, rep in representations.items():
+                        all_representations[name].append(rep.cpu())
         
         # Remove hooks
         for hook in hooks:
             hook.remove()
         
-        # Concatenate
+        # Concatenate with size limits for MPS
         for name in all_representations:
-            all_representations[name] = torch.cat(all_representations[name], dim=0)
-            # Flatten spatial dimensions if needed
-            if len(all_representations[name].shape) > 2:
+            if all_representations[name]:
+                concatenated = torch.cat(all_representations[name], dim=0)
+                
+                # For MPS: limit final size ultra-aggressively
+                if 'mps' in str(self.device) and concatenated.shape[0] > 20:
+                    indices = torch.randperm(concatenated.shape[0])[:20]
+                    concatenated = concatenated[indices]
+                
+                all_representations[name] = concatenated
+            
+            # Flatten spatial dimensions if needed (standard case)
+            if self.device != 'mps' and len(all_representations[name].shape) > 2:
                 batch_size = all_representations[name].shape[0]
                 all_representations[name] = all_representations[name].view(batch_size, -1)
         
@@ -94,18 +295,45 @@ class GeometricAnalyzer:
 
     def compute_representation_metrics(self, representations):
         """Compute comprehensive geometric metrics for representations"""
+        if 'mps' in str(self.device):
+            return self._compute_representation_metrics_minimal(representations)
+        else:
+            return self._compute_representation_metrics_standard(representations)
+    
+    def _compute_representation_metrics_minimal(self, representations):
+        """Ultra-minimal metrics computation for MPS"""
+        print(f"🔍 MPS: Computing minimal metrics for {len(representations)} layers")
         metrics = {}
         
+        for layer_name, rep in representations.items():
+            print(f"🔍 MPS: Processing {layer_name} with shape {rep.shape}")
+            
+            # Convert to numpy with minimal samples
+            rep_np = rep.numpy()
+            
+            # Only basic statistics - no complex computations
+            metrics[layer_name] = {
+                'mean_activation': float(np.mean(rep_np)),
+                'std_activation': float(np.std(rep_np)),
+                'sparsity': float(np.mean(rep_np == 0)),
+                'dimensionality': rep_np.shape[1],
+                'sample_count': rep_np.shape[0],
+                'intrinsic_dim': {'basic_rank': min(rep_np.shape)}
+            }
+            
+            print(f"🔍 MPS: Computed basic stats for {layer_name}")
+        
+        print(f"🔍 MPS: Minimal metrics computation completed")
+        return metrics
+    
+    def _compute_representation_metrics_standard(self, representations):
+        """Standard metrics computation for CUDA/CPU"""
+        metrics = {}
         layer_names = list(representations.keys())
         
         for layer_name in tqdm(layer_names, desc="Computing geometric metrics"):
             rep = representations[layer_name]
             rep_np = rep.numpy()
-            
-            # For MPS, subsample to prevent memory issues
-            if self.device == 'mps' and rep_np.shape[0] > 100:
-                indices = np.random.choice(rep_np.shape[0], 100, replace=False)
-                rep_np = rep_np[indices]
             
             # Basic statistics
             metrics[layer_name] = {
@@ -115,16 +343,12 @@ class GeometricAnalyzer:
                 'dimensionality': rep_np.shape[1]
             }
             
-            # Intrinsic dimensionality (skip for MPS to prevent memory issues)
-            if self.device == 'mps':
-                metrics[layer_name]['intrinsic_dim'] = {'basic_rank': min(rep_np.shape)}
-            else:
-                metrics[layer_name]['intrinsic_dim'] = self._estimate_intrinsic_dimension(rep_np)
+            # Intrinsic dimensionality
+            metrics[layer_name]['intrinsic_dim'] = self._estimate_intrinsic_dimension(rep_np)
             
-            # Geometric properties (simplified for MPS)
-            if self.device != 'mps':
-                metrics[layer_name].update(self._compute_geometric_properties(rep_np))
-                metrics[layer_name].update(self._compute_topological_features(rep_np))
+            # Geometric properties
+            metrics[layer_name].update(self._compute_geometric_properties(rep_np))
+            metrics[layer_name].update(self._compute_topological_features(rep_np))
         
         return metrics
     
@@ -482,8 +706,69 @@ class GeometricAnalyzer:
         
         return np.mean(preservation_scores)
     
+    def _create_simplified_mps_visualization(self, representations, metrics, save_path=None):
+        """Simplified visualization for MPS with minimal metrics"""
+        print("🔍 MPS: Creating simplified visualization")
+        
+        fig = plt.figure(figsize=(12, 8))
+        layer_names = list(metrics.keys())
+        
+        # Plot 1: Basic statistics
+        ax1 = plt.subplot(2, 2, 1)
+        mean_activations = [metrics[l]['mean_activation'] for l in layer_names]
+        x = np.arange(len(layer_names))
+        ax1.bar(x, mean_activations, alpha=0.8, color='blue')
+        ax1.set_title('Mean Activation per Layer')
+        ax1.set_xlabel('Layer')
+        ax1.set_ylabel('Mean Activation')
+        ax1.set_xticks(x)
+        ax1.set_xticklabels([f'L{i}' for i in range(len(layer_names))])
+        
+        # Plot 2: Standard deviation
+        ax2 = plt.subplot(2, 2, 2)
+        std_activations = [metrics[l]['std_activation'] for l in layer_names]
+        ax2.bar(x, std_activations, alpha=0.8, color='green')
+        ax2.set_title('Activation Std per Layer')
+        ax2.set_xlabel('Layer')
+        ax2.set_ylabel('Standard Deviation')
+        ax2.set_xticks(x)
+        ax2.set_xticklabels([f'L{i}' for i in range(len(layer_names))])
+        
+        # Plot 3: Sparsity
+        ax3 = plt.subplot(2, 2, 3)
+        sparsities = [metrics[l]['sparsity'] for l in layer_names]
+        ax3.bar(x, sparsities, alpha=0.8, color='red')
+        ax3.set_title('Sparsity per Layer')
+        ax3.set_xlabel('Layer')
+        ax3.set_ylabel('Sparsity')
+        ax3.set_xticks(x)
+        ax3.set_xticklabels([f'L{i}' for i in range(len(layer_names))])
+        
+        # Plot 4: Dimensionality
+        ax4 = plt.subplot(2, 2, 4)
+        dims = [metrics[l]['dimensionality'] for l in layer_names]
+        ax4.bar(x, dims, alpha=0.8, color='orange')
+        ax4.set_title('Feature Dimensionality per Layer')
+        ax4.set_xlabel('Layer')
+        ax4.set_ylabel('Dimensionality')
+        ax4.set_xticks(x)
+        ax4.set_xticklabels([f'L{i}' for i in range(len(layer_names))])
+        
+        plt.tight_layout()
+        plt.suptitle('MPS Simplified Geometric Analysis', fontsize=14, y=0.98)
+        
+        if save_path:
+            fig.savefig(save_path, dpi=150, bbox_inches='tight')
+            print(f"🔍 MPS: Saved visualization to {save_path}")
+        
+        return fig
+    
     def visualize_geometric_analysis(self, representations, metrics, save_path=None):
         """Create comprehensive geometric visualizations"""
+        # For MPS: create simplified visualization
+        if 'mps' in str(self.device):
+            return self._create_simplified_mps_visualization(representations, metrics, save_path)
+        
         n_layers = len(representations)
         
         fig = plt.figure(figsize=(20, 15))
@@ -491,14 +776,22 @@ class GeometricAnalyzer:
         # 1. Intrinsic dimensionality across layers
         ax1 = plt.subplot(3, 3, 1)
         layer_names = list(metrics.keys())
-        pca_90_dims = [metrics[l]['intrinsic_dim']['pca_90'] for l in layer_names]
-        mle_dims = [metrics[l]['intrinsic_dim']['mle'] for l in layer_names]
-        
-        x = np.arange(len(layer_names))
-        width = 0.35
-        
-        ax1.bar(x - width/2, pca_90_dims, width, label='PCA 90%', alpha=0.8)
-        ax1.bar(x + width/2, mle_dims, width, label='MLE', alpha=0.8)
+        # Handle both full and minimal metrics
+        if 'mps' in str(self.device):
+            # MPS minimal metrics - use basic rank
+            basic_ranks = [metrics[l]['intrinsic_dim']['basic_rank'] for l in layer_names]
+            x = np.arange(len(layer_names))
+            ax1.bar(x, basic_ranks, label='Basic Rank', alpha=0.8, color='orange')
+        else:
+            # Full metrics
+            pca_90_dims = [metrics[l]['intrinsic_dim']['pca_90'] for l in layer_names]
+            mle_dims = [metrics[l]['intrinsic_dim']['mle'] for l in layer_names]
+            
+            x = np.arange(len(layer_names))
+            width = 0.35
+            
+            ax1.bar(x - width/2, pca_90_dims, width, label='PCA 90%', alpha=0.8)
+            ax1.bar(x + width/2, mle_dims, width, label='MLE', alpha=0.8)
         ax1.set_xlabel('Layer')
         ax1.set_ylabel('Intrinsic Dimension')
         ax1.set_title('Intrinsic Dimensionality Evolution')
@@ -981,7 +1274,7 @@ class NTKAnalyzer:
         x_sample = torch.cat(x_sample)[:n_samples].to(self.device)
 
         # Limit sample size to prevent memory issues
-        if self.device == 'mps':
+        if 'mps' in str(self.device):
             max_samples = min(n_samples, 25)  # Smaller for MPS
         else:
             max_samples = min(n_samples, 100)  # Cap at 100 samples
@@ -1178,7 +1471,7 @@ class AlignmentAnalyzer:
     def compute_cka(self, features1, features2):
         """Compute Centered Kernel Alignment with memory optimization"""
         # Limit sample size to prevent memory issues
-        max_samples = 200 if self.device == 'mps' else 1000
+        max_samples = 200 if 'mps' in str(self.device) else 1000
         if features1.shape[0] > max_samples:
             indices = torch.randperm(features1.shape[0])[:max_samples]
             features1 = features1[indices]
@@ -1191,7 +1484,7 @@ class AlignmentAnalyzer:
         features2 = features2 - features2.mean(dim=0, keepdim=True)
 
         # Compute Gram matrices in batches to save memory
-        batch_size = min(100 if self.device == 'mps' else 500, n)
+        batch_size = min(100 if 'mps' in str(self.device) else 500, n)
 
         K = torch.zeros(n, n, device=features1.device)
         L = torch.zeros(n, n, device=features2.device)
@@ -2644,11 +2937,18 @@ if __name__ == "__main__":
             first_layer = list(results['geometric']['metrics'].keys())[0]
             last_layer = list(results['geometric']['metrics'].keys())[-1]
             
-            first_dim = results['geometric']['metrics'][first_layer]['intrinsic_dim']['pca_90']
-            last_dim = results['geometric']['metrics'][last_layer]['intrinsic_dim']['pca_90']
-            
-            print(f"- Intrinsic dimension (first layer): {first_dim}")
-            print(f"- Intrinsic dimension (last layer): {last_dim}")
+            # Handle both full and minimal metrics  
+            if 'pca_90' in results['geometric']['metrics'][first_layer]['intrinsic_dim']:
+                first_dim = results['geometric']['metrics'][first_layer]['intrinsic_dim']['pca_90']
+                last_dim = results['geometric']['metrics'][last_layer]['intrinsic_dim']['pca_90']
+                print(f"- Intrinsic dimension (first layer): {first_dim}")
+                print(f"- Intrinsic dimension (last layer): {last_dim}")
+            else:
+                # MPS minimal metrics
+                first_rank = results['geometric']['metrics'][first_layer]['intrinsic_dim']['basic_rank']
+                last_rank = results['geometric']['metrics'][last_layer]['intrinsic_dim']['basic_rank']
+                print(f"- Basic rank (first layer): {first_rank}")
+                print(f"- Basic rank (last layer): {last_rank}")
         
         elif 'metrics' in results:
             n_layers = len(results['metrics'])
@@ -2658,8 +2958,15 @@ if __name__ == "__main__":
             first_layer = list(results['metrics'].keys())[0]
             last_layer = list(results['metrics'].keys())[-1]
             
-            first_dim = results['metrics'][first_layer]['intrinsic_dim']['pca_90']
-            last_dim = results['metrics'][last_layer]['intrinsic_dim']['pca_90']
-            
-            print(f"- Intrinsic dimension (first layer): {first_dim}")
-            print(f"- Intrinsic dimension (last layer): {last_dim}")
+            # Handle both full and minimal metrics
+            if 'pca_90' in results['metrics'][first_layer]['intrinsic_dim']:
+                first_dim = results['metrics'][first_layer]['intrinsic_dim']['pca_90']
+                last_dim = results['metrics'][last_layer]['intrinsic_dim']['pca_90']
+                print(f"- Intrinsic dimension (first layer): {first_dim}")
+                print(f"- Intrinsic dimension (last layer): {last_dim}")
+            else:
+                # MPS minimal metrics
+                first_rank = results['metrics'][first_layer]['intrinsic_dim']['basic_rank']
+                last_rank = results['metrics'][last_layer]['intrinsic_dim']['basic_rank']
+                print(f"- Basic rank (first layer): {first_rank}")
+                print(f"- Basic rank (last layer): {last_rank}")

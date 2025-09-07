@@ -1,0 +1,106 @@
+{
+  "metrics": {
+    "layer1_0": {
+      "mean_activation": 12.935979843139648,
+      "std_activation": 126.31169891357422,
+      "sparsity": 0.0,
+      "dimensionality": 16,
+      "sample_count": 2,
+      "intrinsic_dim": {
+        "basic_rank": 2
+      }
+    },
+    "layer1_1": {
+      "mean_activation": -13.978694915771484,
+      "std_activation": 82.03977966308594,
+      "sparsity": 0.0,
+      "dimensionality": 16,
+      "sample_count": 2,
+      "intrinsic_dim": {
+        "basic_rank": 2
+      }
+    },
+    "layer1_2": {
+      "mean_activation": 3.8201825618743896,
+      "std_activation": 64.91494750976562,
+      "sparsity": 0.0,
+      "dimensionality": 16,
+      "sample_count": 2,
+      "intrinsic_dim": {
+        "basic_rank": 2
+      }
+    },
+    "layer1_3": {
+      "mean_activation": 22.472972869873047,
+      "std_activation": 80.52388000488281,
+      "sparsity": 0.0,
+      "dimensionality": 16,
+      "sample_count": 2,
+      "intrinsic_dim": {
+        "basic_rank": 2
+      }
+    }
+  },
+  "curvature": {
+    "layer1_0": {
+      "mean_curvature": 0.8,
+      "std_curvature": 0.0,
+      "positive_curvature_fraction": 1.0,
+      "negative_curvature_fraction": 0.0,
+      "curvature_range": [
+        0.8,
+        0.8
+      ]
+    },
+    "layer1_1": {
+      "mean_curvature": 0.8,
+      "std_curvature": 0.0,
+      "positive_curvature_fraction": 1.0,
+      "negative_curvature_fraction": 0.0,
+      "curvature_range": [
+        0.8,
+        0.8
+      ]
+    },
+    "layer1_2": {
+      "mean_curvature": 0.8,
+      "std_curvature": 0.0,
+      "positive_curvature_fraction": 1.0,
+      "negative_curvature_fraction": 0.0,
+      "curvature_range": [
+        0.8,
+        0.8
+      ]
+    },
+    "layer1_3": {
+      "mean_curvature": 0.8,
+      "std_curvature": 0.0,
+      "positive_curvature_fraction": 1.0,
+      "negative_curvature_fraction": 0.0,
+      "curvature_range": [
+        0.8,
+        0.8
+      ]
+    }
+  },
+  "transitions": {
+    "layer1_0->layer1_1": {
+      "representation_change": 488.9222106933594,
+      "correlation": -0.31223130002155625,
+      "mutual_information": 0.0,
+      "geometric_distortion": 0.0
+    },
+    "layer1_1->layer1_2": {
+      "representation_change": 303.4562072753906,
+      "correlation": -0.023418055328528767,
+      "mutual_information": 0.0,
+      "geometric_distortion": 0.0
+    },
+    "layer1_2->layer1_3": {
+      "representation_change": 301.47467041015625,
+      "correlation": -0.030121085838913295,
+      "mutual_information": 0.0,
+      "geometric_distortion": 0.0
+    }
+  }
+}

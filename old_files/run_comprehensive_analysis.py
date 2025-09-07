@@ -9,7 +9,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 import json
-from multi_model_analysis import MultiModelAnalyzer
+from multi_model_analysis import MultiModelAnalyzer, NumpyEncoder
 
 def run_comprehensive_analysis():
     """Run comprehensive analysis across multiple models and datasets"""
@@ -19,7 +19,7 @@ def run_comprehensive_analysis():
         'resnet18',           # ResNet architecture
         'vit_base_patch16_224',  # Vision Transformer
         'convnext_tiny',      # ConvNeXt (CNN)
-        'mlp_mixer_b16_224'   # MLP-Mixer
+        'mixer_b16_224'   # MLP-Mixer
     ]
     
     datasets = ['cifar10', 'cifar100', 'svhn']
@@ -83,29 +83,28 @@ def run_comprehensive_analysis():
                     # Save model-specific results
                     model_results_path = model_output_dir / f"analysis_results.json"
                     with open(model_results_path, 'w') as f:
-                        json.dump(result, f, indent=2, cls=analyzer.NumpyEncoder)
+                        json.dump(result, f, indent=2, cls=NumpyEncoder)
                     
-                    # Save features separately
+                    # Save features separately - features are already saved by the analyzer
+                    # The features are saved as {model}_{dataset}_features.pt in the main output directory
+                    # We can copy them to the model-specific folder if needed
                     features_path = model_output_dir / "extracted_features.pt"
-                    if 'feats' in result.get('metadata', {}):
-                        import torch
-                        torch.save({
-                            'features': result['metadata'],
-                            'layer_names': result.get('metadata', {}).get('layer_names', []),
-                            'feature_dims': result.get('metadata', {}).get('feature_dims', {}),
-                            'targets': result.get('metadata', {}).get('targets', [])
-                        }, features_path)
+                    main_features_path = Path(base_output_dir) / f"{model_name}_{dataset}_features.pt"
+                    if main_features_path.exists():
+                        import shutil
+                        shutil.copy2(main_features_path, features_path)
+                        print(f"   Features copied to: {features_path}")
                     
                     # Save individual analysis components
                     if 'macroscopic' in result:
                         macro_path = model_output_dir / "macroscopic_analysis.json"
                         with open(macro_path, 'w') as f:
-                            json.dump(result['macroscopic'], f, indent=2, cls=analyzer.NumpyEncoder)
+                            json.dump(result['macroscopic'], f, indent=2, cls=NumpyEncoder)
                     
                     if 'mesoscopic' in result:
                         meso_path = model_output_dir / "mesoscopic_analysis.json"
                         with open(meso_path, 'w') as f:
-                            json.dump(result['mesoscopic'], f, indent=2, cls=analyzer.NumpyEncoder)
+                            json.dump(result['mesoscopic'], f, indent=2, cls=NumpyEncoder)
                     
                     # Timing information
                     model_duration = time.time() - model_start_time
@@ -153,12 +152,12 @@ def run_comprehensive_analysis():
     # Save experiment log
     log_path = Path(base_output_dir) / "experiment_log.json"
     with open(log_path, 'w') as f:
-        json.dump(experiment_log, f, indent=2, cls=analyzer.NumpyEncoder)
+        json.dump(experiment_log, f, indent=2, cls=NumpyEncoder)
     
     # Save comprehensive results
     comprehensive_path = Path(base_output_dir) / "comprehensive_results.json"
     with open(comprehensive_path, 'w') as f:
-        json.dump(all_results, f, indent=2, cls=analyzer.NumpyEncoder)
+        json.dump(all_results, f, indent=2, cls=NumpyEncoder)
     
     # Generate summary report
     generate_summary_report(base_output_dir, experiment_log, all_results)

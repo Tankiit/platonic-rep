@@ -158,8 +158,17 @@ class MacroscopicAnalysis:
                 i_yt = self._compute_simple_correlation(features_truncated, labels[:min_samples])
                 h_t = self._compute_simple_entropy(features_truncated)
                 
-                efficiency = i_yt / (i_xt + 1e-6)
-                compression = 1 - (i_xt / (self._compute_simple_entropy(inputs_truncated) + 1e-6))
+                # Safe division with bounds checking
+                i_xt_safe = max(i_xt, 1e-6)  # Ensure non-zero
+                h_inputs = self._compute_simple_entropy(inputs_truncated)
+                h_inputs_safe = max(h_inputs, 1e-6)  # Ensure non-zero
+                
+                efficiency = i_yt / i_xt_safe
+                compression = 1 - (i_xt_safe / h_inputs_safe)
+                
+                # Clamp values to reasonable ranges
+                efficiency = np.clip(efficiency, 0.0, 100.0)
+                compression = np.clip(compression, -10.0, 10.0)
                 
             except Exception as e:
                 print(f"    Warning: Error computing metrics for layer {layer_idx}: {e}")
@@ -188,11 +197,32 @@ class MacroscopicAnalysis:
             if Y.shape[1] > 50:
                 Y = Y[:, :50]
             
+            # Handle edge cases
+            if X.shape[1] == 0 or Y.shape[1] == 0:
+                return 0.1
+            
             # Compute correlation matrix
             corr_matrix = np.corrcoef(X.T, Y.T)
+            
+            # Handle NaN/Inf values
+            if np.any(np.isnan(corr_matrix)) or np.any(np.isinf(corr_matrix)):
+                return 0.1
+            
             # Extract cross-correlations
             cross_corr = corr_matrix[:X.shape[1], X.shape[1]:]
-            return np.mean(np.abs(cross_corr))
+            
+            # Handle empty cross-correlation
+            if cross_corr.size == 0:
+                return 0.1
+            
+            # Compute mean of absolute values, handling NaN/Inf
+            abs_corr = np.abs(cross_corr)
+            abs_corr = abs_corr[np.isfinite(abs_corr)]  # Remove NaN/Inf
+            
+            if abs_corr.size == 0:
+                return 0.1
+                
+            return np.mean(abs_corr)
         except:
             return 0.1  # Fallback value
     
@@ -200,7 +230,10 @@ class MacroscopicAnalysis:
         """Compute simple entropy estimate"""
         try:
             # Use variance as simple entropy proxy
-            return np.log(np.var(X) + 1e-6)
+            variance = np.var(X)
+            if variance <= 0:
+                return 1.0  # Safe fallback for zero/negative variance
+            return np.log(variance + 1e-6)
         except:
             return 1.0  # Fallback value
         

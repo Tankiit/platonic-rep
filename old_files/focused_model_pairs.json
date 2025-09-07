@@ -1,0 +1,23 @@
+[
+  {
+    "pair": "resnet50 + bert_base",
+    "ntk": 0.1756908893585205,
+    "agop": 5.943414688110352,
+    "alignment": 0.0170138888061046,
+    "phase": "chaotic"
+  },
+  {
+    "pair": "vit_base_patch16_224 + gpt2_medium",
+    "ntk": 0.1887651532888412,
+    "agop": 31.40801239013672,
+    "alignment": 0.0149305565282702,
+    "phase": "chaotic"
+  },
+  {
+    "pair": "convnext_tiny + roberta_base",
+    "ntk": 0.2506125569343567,
+    "agop": 25.10449981689453,
+    "alignment": 0.0192708354443311,
+    "phase": "chaotic"
+  }
+]

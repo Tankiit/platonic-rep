@@ -1,0 +1,29 @@
+[
+  {
+    "model": "resnet50",
+    "dataset": "svhn",
+    "layer": "layer_0",
+    "layer_idx": 0,
+    "I_X_T": 0.1,
+    "I_Y_T": 0.1,
+    "efficiency": 0.9999900000999988
+  },
+  {
+    "model": "vit_base_patch16_224",
+    "dataset": "cifar10",
+    "layer": "layer_0",
+    "layer_idx": 0,
+    "I_X_T": 0.0343771043451699,
+    "I_Y_T": 0.1,
+    "efficiency": 2.908828217983168
+  },
+  {
+    "model": "convnext_tiny",
+    "dataset": "cifar10",
+    "layer": "layer_0",
+    "layer_idx": 0,
+    "I_X_T": 0.033029676738138,
+    "I_Y_T": 0.1,
+    "efficiency": 3.0274886824991274
+  }
+]

@@ -105,18 +105,33 @@ class MultiscaleInformationAnalysis:
             feature_means = np.mean(layer_features.numpy(), axis=0)
             feature_vars = np.var(layer_features.numpy(), axis=0)
             
-            # Sparsity analysis
+            # Basic metrics (existing)
             activation_sparsity = self.compute_sparsity(layer_features)
-            
-            # Feature selectivity
             selectivity = self.compute_selectivity(layer_features)
+            feature_entropy = self.compute_feature_entropy(layer_features)
+            
+            # Enhanced microscopic analysis
+            activation_patterns = self.analyze_activation_patterns(layer_features)
+            dead_neurons = self.detect_dead_neurons(layer_features)
+            feature_selectivity_detailed = self.compute_detailed_selectivity(layer_features)
+            neuron_dynamics = self.analyze_neuron_dynamics(layer_features)
+            gradient_analysis = self.analyze_gradient_magnitudes(layer_features, layer_idx)
             
             microscopic_results[f'layer_{layer_idx}'] = {
+                # Basic metrics (existing)
                 'mean_activation': float(np.mean(feature_means)),
                 'variance_activation': float(np.mean(feature_vars)),
                 'sparsity': activation_sparsity,
                 'selectivity': selectivity,
-                'feature_entropy': self.compute_feature_entropy(layer_features)
+                'feature_entropy': feature_entropy,
+                
+                # Enhanced microscopic metrics
+                'activation_patterns': activation_patterns,
+                'dead_neurons': dead_neurons,
+                'detailed_selectivity': feature_selectivity_detailed,
+                'neuron_dynamics': neuron_dynamics,
+                'gradient_analysis': gradient_analysis,
+                'individual_neuron_stats': self.compute_individual_neuron_stats(layer_features)
             }
             
         return microscopic_results
@@ -232,6 +247,425 @@ class MultiscaleInformationAnalysis:
             selectivities.append(selectivity)
             
         return float(np.mean(selectivities))
+    
+    def analyze_activation_patterns(self, features):
+        """Analyze detailed activation patterns of neurons"""
+        if isinstance(features, torch.Tensor):
+            features = features.numpy()
+        
+        patterns = {}
+        
+        # Activation distribution analysis
+        patterns['distribution_stats'] = {
+            'skewness': float(np.mean([self._safe_skewness(features[:, i]) for i in range(min(100, features.shape[1]))])),
+            'kurtosis': float(np.mean([self._safe_kurtosis(features[:, i]) for i in range(min(100, features.shape[1]))])),
+            'bimodality_coefficient': self._compute_bimodality_coefficient(features)
+        }
+        
+        # Activation threshold analysis
+        patterns['threshold_analysis'] = self._analyze_activation_thresholds(features)
+        
+        # Temporal consistency (across samples)
+        patterns['temporal_consistency'] = self._compute_temporal_consistency(features)
+        
+        # Population-level patterns
+        patterns['population_patterns'] = self._analyze_population_patterns(features)
+        
+        return patterns
+    
+    def detect_dead_neurons(self, features):
+        """Detect dead or nearly-dead neurons"""
+        if isinstance(features, torch.Tensor):
+            features = features.numpy()
+        
+        dead_analysis = {}
+        
+        # Method 1: Zero activation threshold
+        zero_threshold = 1e-6
+        zero_activations = np.mean(np.abs(features) < zero_threshold, axis=0)
+        dead_neurons_zero = np.mean(zero_activations > 0.95)  # 95% of samples have near-zero activation
+        
+        # Method 2: Very low variance (constant activations)
+        feature_vars = np.var(features, axis=0)
+        low_variance_threshold = 1e-4
+        dead_neurons_lowvar = np.mean(feature_vars < low_variance_threshold)
+        
+        # Method 3: Extreme outlier detection (neurons that never activate)
+        max_activations = np.max(np.abs(features), axis=0)
+        dead_neurons_nomax = np.mean(max_activations < 0.01)
+        
+        # Method 4: Distribution-based (neurons with very peaked distributions)
+        dead_neurons_peaked = self._detect_peaked_distributions(features)
+        
+        dead_analysis = {
+            'dead_fraction_zero': float(dead_neurons_zero),
+            'dead_fraction_lowvar': float(dead_neurons_lowvar),
+            'dead_fraction_nomax': float(dead_neurons_nomax),
+            'dead_fraction_peaked': float(dead_neurons_peaked),
+            'overall_dead_estimate': float(np.mean([dead_neurons_zero, dead_neurons_lowvar, dead_neurons_nomax])),
+            'neuron_health_score': float(1.0 - np.mean([dead_neurons_zero, dead_neurons_lowvar, dead_neurons_nomax]))
+        }
+        
+        return dead_analysis
+    
+    def compute_detailed_selectivity(self, features):
+        """Compute detailed feature selectivity metrics"""
+        if isinstance(features, torch.Tensor):
+            features = features.numpy()
+        
+        selectivity_metrics = {}
+        
+        # Lifetime sparsity (for each neuron across samples)
+        lifetime_sparsity = []
+        for i in range(min(200, features.shape[1])):  # Limit for efficiency
+            neuron_acts = features[:, i]
+            if np.max(np.abs(neuron_acts)) > 1e-6:
+                normalized_acts = np.abs(neuron_acts) / np.max(np.abs(neuron_acts))
+                sparsity = (1 - (np.sum(normalized_acts)**2 / (len(normalized_acts) * np.sum(normalized_acts**2)))) / (1 - 1/len(normalized_acts))
+                lifetime_sparsity.append(max(0, min(1, sparsity)))  # Clamp to [0,1]
+            else:
+                lifetime_sparsity.append(1.0)  # Completely sparse
+                
+        # Population sparsity (across neurons for each sample)
+        population_sparsity = []
+        for i in range(min(500, features.shape[0])):  # Limit for efficiency
+            sample_acts = features[i, :]
+            if np.max(np.abs(sample_acts)) > 1e-6:
+                normalized_acts = np.abs(sample_acts) / np.max(np.abs(sample_acts))
+                sparsity = (1 - (np.sum(normalized_acts)**2 / (len(normalized_acts) * np.sum(normalized_acts**2)))) / (1 - 1/len(normalized_acts))
+                population_sparsity.append(max(0, min(1, sparsity)))
+            else:
+                population_sparsity.append(1.0)
+                
+        # Selectivity index (based on response distribution)
+        selectivity_indices = []
+        for i in range(min(100, features.shape[1])):
+            neuron_acts = np.abs(features[:, i])
+            if np.sum(neuron_acts) > 1e-6:
+                # Gini coefficient as selectivity measure
+                sorted_acts = np.sort(neuron_acts)
+                n = len(sorted_acts)
+                cumsum = np.cumsum(sorted_acts)
+                selectivity_idx = (n + 1 - 2 * np.sum(cumsum) / cumsum[-1]) / n if cumsum[-1] > 0 else 0
+                selectivity_indices.append(selectivity_idx)
+            else:
+                selectivity_indices.append(1.0)  # Maximally selective (always zero)
+        
+        selectivity_metrics = {
+            'mean_lifetime_sparsity': float(np.mean(lifetime_sparsity)),
+            'std_lifetime_sparsity': float(np.std(lifetime_sparsity)),
+            'mean_population_sparsity': float(np.mean(population_sparsity)),
+            'std_population_sparsity': float(np.std(population_sparsity)),
+            'mean_selectivity_index': float(np.mean(selectivity_indices)),
+            'std_selectivity_index': float(np.std(selectivity_indices)),
+            'highly_selective_fraction': float(np.mean(np.array(selectivity_indices) > 0.7))
+        }
+        
+        return selectivity_metrics
+    
+    def analyze_neuron_dynamics(self, features):
+        """Analyze dynamic properties of individual neurons"""
+        if isinstance(features, torch.Tensor):
+            features = features.numpy()
+            
+        dynamics = {}
+        
+        # Response magnitude distribution
+        response_magnitudes = np.mean(np.abs(features), axis=0)
+        dynamics['response_magnitude'] = {
+            'mean': float(np.mean(response_magnitudes)),
+            'std': float(np.std(response_magnitudes)),
+            'cv': float(np.std(response_magnitudes) / (np.mean(response_magnitudes) + 1e-10))
+        }
+        
+        # Dynamic range analysis
+        min_responses = np.min(features, axis=0)
+        max_responses = np.max(features, axis=0)
+        dynamic_ranges = max_responses - min_responses
+        
+        dynamics['dynamic_range'] = {
+            'mean': float(np.mean(dynamic_ranges)),
+            'std': float(np.std(dynamic_ranges)),
+            'effective_range_fraction': float(np.mean(dynamic_ranges > 0.1 * np.max(dynamic_ranges)))
+        }
+        
+        # Activation consistency
+        feature_stds = np.std(features, axis=0)
+        feature_means = np.mean(features, axis=0)
+        cv_activations = feature_stds / (np.abs(feature_means) + 1e-10)
+        
+        dynamics['activation_consistency'] = {
+            'mean_cv': float(np.mean(cv_activations[np.isfinite(cv_activations)])),
+            'consistent_neurons_fraction': float(np.mean(cv_activations < 1.0))
+        }
+        
+        return dynamics
+    
+    def compute_individual_neuron_stats(self, features):
+        """Compute statistics for individual neurons (summary)"""
+        if isinstance(features, torch.Tensor):
+            features = features.numpy()
+            
+        # Sample a subset of neurons for detailed analysis
+        n_neurons_to_analyze = min(50, features.shape[1])
+        sampled_indices = np.random.choice(features.shape[1], n_neurons_to_analyze, replace=False)
+        
+        individual_stats = {}
+        
+        for i, neuron_idx in enumerate(sampled_indices):
+            neuron_activations = features[:, neuron_idx]
+            
+            stats = {
+                'mean': float(np.mean(neuron_activations)),
+                'std': float(np.std(neuron_activations)),
+                'min': float(np.min(neuron_activations)),
+                'max': float(np.max(neuron_activations)),
+                'median': float(np.median(neuron_activations)),
+                'q25': float(np.percentile(neuron_activations, 25)),
+                'q75': float(np.percentile(neuron_activations, 75)),
+                'active_fraction': float(np.mean(np.abs(neuron_activations) > 0.01)),
+                'response_sparsity': self._compute_neuron_sparsity(neuron_activations)
+            }
+            
+            individual_stats[f'neuron_{neuron_idx}'] = stats
+            
+        # Summary statistics across sampled neurons
+        individual_stats['summary'] = {
+            'avg_active_fraction': float(np.mean([stats['active_fraction'] for stats in individual_stats.values() if isinstance(stats, dict) and 'active_fraction' in stats])),
+            'avg_response_sparsity': float(np.mean([stats['response_sparsity'] for stats in individual_stats.values() if isinstance(stats, dict) and 'response_sparsity' in stats]))
+        }
+        
+        return individual_stats
+    
+    def _safe_skewness(self, data):
+        """Compute skewness safely"""
+        try:
+            from scipy.stats import skew
+            return float(skew(data))
+        except:
+            return 0.0
+    
+    def _safe_kurtosis(self, data):
+        """Compute kurtosis safely"""
+        try:
+            from scipy.stats import kurtosis
+            return float(kurtosis(data))
+        except:
+            return 0.0
+    
+    def _compute_bimodality_coefficient(self, features):
+        """Compute bimodality coefficient for the layer"""
+        # Sample subset for efficiency
+        subset = features[:min(1000, features.shape[0]), :min(50, features.shape[1])]
+        flat_data = subset.flatten()
+        
+        try:
+            skewness_val = self._safe_skewness(flat_data)
+            kurtosis_val = self._safe_kurtosis(flat_data)
+            n = len(flat_data)
+            
+            # Bimodality coefficient formula
+            bc = (skewness_val**2 + 1) / (kurtosis_val + 3 * (n-1)**2 / ((n-2)*(n-3)))
+            return float(bc)
+        except:
+            return 0.0
+    
+    def _analyze_activation_thresholds(self, features):
+        """Analyze activation threshold patterns"""
+        # Find effective activation thresholds
+        thresholds = []
+        for i in range(min(100, features.shape[1])):
+            neuron_acts = np.abs(features[:, i])
+            if np.max(neuron_acts) > 1e-6:
+                # Find threshold where 90% of maximum response is reached
+                sorted_acts = np.sort(neuron_acts)
+                threshold_90 = sorted_acts[int(0.9 * len(sorted_acts))]
+                thresholds.append(threshold_90 / np.max(neuron_acts))  # Normalized threshold
+            else:
+                thresholds.append(1.0)
+                
+        return {
+            'mean_threshold_90': float(np.mean(thresholds)),
+            'std_threshold_90': float(np.std(thresholds)),
+            'low_threshold_fraction': float(np.mean(np.array(thresholds) < 0.1))
+        }
+    
+    def _compute_temporal_consistency(self, features):
+        """Compute temporal consistency of activations"""
+        # Split data into chunks and compute correlation
+        n_samples = features.shape[0]
+        if n_samples < 20:
+            return {'consistency_score': 0.5}
+        
+        chunk_size = n_samples // 4
+        chunk1 = features[:chunk_size]
+        chunk2 = features[chunk_size:2*chunk_size]
+        
+        # Compute mean activations for each chunk
+        mean1 = np.mean(chunk1, axis=0)
+        mean2 = np.mean(chunk2, axis=0)
+        
+        # Correlation between chunks
+        try:
+            consistency = np.corrcoef(mean1, mean2)[0, 1]
+            if np.isnan(consistency):
+                consistency = 0.0
+        except:
+            consistency = 0.0
+            
+        return {'consistency_score': float(consistency)}
+    
+    def _analyze_population_patterns(self, features):
+        """Analyze population-level activation patterns"""
+        # Compute pairwise correlations between neurons
+        n_neurons_sample = min(100, features.shape[1])
+        sampled_neurons = features[:, :n_neurons_sample]
+        
+        try:
+            corr_matrix = np.corrcoef(sampled_neurons.T)
+            corr_matrix = corr_matrix[~np.isnan(corr_matrix)]
+            
+            if len(corr_matrix) > 0:
+                mean_correlation = float(np.mean(corr_matrix))
+                high_corr_fraction = float(np.mean(np.abs(corr_matrix) > 0.7))
+            else:
+                mean_correlation = 0.0
+                high_corr_fraction = 0.0
+        except:
+            mean_correlation = 0.0
+            high_corr_fraction = 0.0
+        
+        return {
+            'mean_neuron_correlation': mean_correlation,
+            'high_correlation_fraction': high_corr_fraction
+        }
+    
+    def _detect_peaked_distributions(self, features):
+        """Detect neurons with extremely peaked distributions"""
+        peaked_count = 0
+        n_neurons_check = min(200, features.shape[1])
+        
+        for i in range(n_neurons_check):
+            neuron_acts = features[:, i]
+            
+            # Check if distribution is extremely peaked (high kurtosis)
+            try:
+                kurt = self._safe_kurtosis(neuron_acts)
+                if kurt > 10:  # Very high kurtosis indicates peaked distribution
+                    peaked_count += 1
+            except:
+                continue
+                
+        return peaked_count / n_neurons_check
+    
+    def _compute_neuron_sparsity(self, neuron_activations):
+        """Compute sparsity for a single neuron"""
+        abs_acts = np.abs(neuron_activations)
+        if np.sum(abs_acts) < 1e-10:
+            return 1.0
+        
+        normalized_acts = abs_acts / np.sum(abs_acts)
+        entropy = -np.sum(normalized_acts * np.log(normalized_acts + 1e-10))
+        max_entropy = np.log(len(normalized_acts))
+        
+        return float(1.0 - entropy / max_entropy) if max_entropy > 0 else 0.0
+    
+    def analyze_gradient_magnitudes(self, features, layer_idx):
+        """Analyze gradient magnitude patterns (approximated from feature variations)"""
+        if isinstance(features, torch.Tensor):
+            features = features.numpy()
+        
+        gradient_analysis = {}
+        
+        # Approximate gradients from feature variations
+        # Method 1: Sample-wise differences (approximate temporal gradients)
+        if features.shape[0] > 1:
+            sample_diffs = np.diff(features, axis=0)
+            sample_gradient_mags = np.sqrt(np.sum(sample_diffs**2, axis=1))
+            
+            gradient_analysis['sample_gradients'] = {
+                'mean_magnitude': float(np.mean(sample_gradient_mags)),
+                'std_magnitude': float(np.std(sample_gradient_mags)),
+                'max_magnitude': float(np.max(sample_gradient_mags)),
+                'gradient_sparsity': float(np.mean(sample_gradient_mags < 0.01 * np.max(sample_gradient_mags)))
+            }
+        else:
+            gradient_analysis['sample_gradients'] = {
+                'mean_magnitude': 0.0, 'std_magnitude': 0.0, 
+                'max_magnitude': 0.0, 'gradient_sparsity': 1.0
+            }
+        
+        # Method 2: Feature-wise gradient estimates (spatial gradients)
+        if features.shape[1] > 1:
+            feature_diffs = np.diff(features, axis=1)
+            feature_gradient_mags = np.sqrt(np.sum(feature_diffs**2, axis=0))
+            
+            gradient_analysis['feature_gradients'] = {
+                'mean_magnitude': float(np.mean(feature_gradient_mags)),
+                'std_magnitude': float(np.std(feature_gradient_mags)),
+                'high_gradient_fraction': float(np.mean(feature_gradient_mags > np.percentile(feature_gradient_mags, 75)))
+            }
+        else:
+            gradient_analysis['feature_gradients'] = {
+                'mean_magnitude': 0.0, 'std_magnitude': 0.0, 
+                'high_gradient_fraction': 0.0
+            }
+        
+        # Method 3: Local variation analysis (smoothness)
+        smoothness_scores = []
+        for i in range(min(100, features.shape[1])):  # Sample subset for efficiency
+            neuron_acts = features[:, i]
+            if len(neuron_acts) > 2:
+                # Compute local variation
+                sorted_acts = np.sort(neuron_acts)
+                local_variations = np.diff(sorted_acts)
+                smoothness = 1.0 / (1.0 + np.std(local_variations))
+                smoothness_scores.append(smoothness)
+            else:
+                smoothness_scores.append(1.0)
+        
+        gradient_analysis['smoothness'] = {
+            'mean_smoothness': float(np.mean(smoothness_scores)),
+            'rough_neurons_fraction': float(np.mean(np.array(smoothness_scores) < 0.5))
+        }
+        
+        # Method 4: Gradient flow estimation
+        # Estimate information flow gradients
+        if features.shape[0] > 10:
+            # Compute feature correlation with layer position as proxy for gradient flow
+            layer_position_gradient = self._estimate_layer_gradient_flow(features, layer_idx)
+            gradient_analysis['gradient_flow'] = layer_position_gradient
+        else:
+            gradient_analysis['gradient_flow'] = {'flow_strength': 0.0, 'flow_direction': 0.0}
+        
+        return gradient_analysis
+    
+    def _estimate_layer_gradient_flow(self, features, layer_idx):
+        """Estimate gradient flow based on layer position and feature patterns"""
+        # Simple proxy: how much features change relative to layer depth
+        total_layers = features.shape[0]  # This is actually samples, but we use as proxy
+        
+        if total_layers > 5:
+            # Compute feature magnitude evolution
+            early_features = features[:total_layers//3]
+            late_features = features[2*total_layers//3:]
+            
+            early_magnitude = np.mean(np.abs(early_features))
+            late_magnitude = np.mean(np.abs(late_features))
+            
+            # Flow strength = magnitude change
+            flow_strength = abs(late_magnitude - early_magnitude) / (early_magnitude + 1e-10)
+            
+            # Flow direction = sign of change
+            flow_direction = 1.0 if late_magnitude > early_magnitude else -1.0
+            
+            return {
+                'flow_strength': float(flow_strength),
+                'flow_direction': float(flow_direction),
+                'magnitude_change': float(late_magnitude - early_magnitude)
+            }
+        else:
+            return {'flow_strength': 0.0, 'flow_direction': 0.0, 'magnitude_change': 0.0}
     
     def compute_feature_entropy(self, features):
         """Compute entropy of feature activations"""
@@ -645,48 +1079,100 @@ class MultiscaleInformationAnalysis:
     
     def visualize_multiscale_analysis(self, results, model_name):
         """Create comprehensive visualization of multiscale analysis"""
-        fig, axes = plt.subplots(2, 2, figsize=(14, 12))
+        # Create larger figure with more subplots for enhanced analysis
+        fig, axes = plt.subplots(3, 3, figsize=(18, 15))
         
         layers = sorted(results['microscopic'].keys(), key=lambda x: int(x.split('_')[1]))
         
-        # 1. Microscopic vs Mesoscopic
+        # 1. Enhanced Microscopic Analysis
         ax = axes[0, 0]
         micro_sparsity = [results['microscopic'][l]['sparsity'] for l in layers]
+        dead_neurons = [results['microscopic'][l]['dead_neurons']['overall_dead_estimate'] for l in layers]
+        
+        ax.plot(range(len(micro_sparsity)), micro_sparsity, 'b-', label='Sparsity', linewidth=2, marker='o')
+        ax.plot(range(len(dead_neurons)), dead_neurons, 'r-', label='Dead Neurons', linewidth=2, marker='s')
+        ax.set_xlabel('Layer', fontsize=12)
+        ax.set_ylabel('Fraction', fontsize=12)
+        ax.set_title('Neuron Health Analysis', fontsize=14)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        # 2. Feature Selectivity Analysis
+        ax = axes[0, 1]
+        lifetime_sparsity = [results['microscopic'][l]['detailed_selectivity']['mean_lifetime_sparsity'] for l in layers]
+        population_sparsity = [results['microscopic'][l]['detailed_selectivity']['mean_population_sparsity'] for l in layers]
+        selectivity_index = [results['microscopic'][l]['detailed_selectivity']['mean_selectivity_index'] for l in layers]
+        
+        ax.plot(range(len(lifetime_sparsity)), lifetime_sparsity, 'g-', label='Lifetime Sparsity', linewidth=2)
+        ax.plot(range(len(population_sparsity)), population_sparsity, 'orange', label='Population Sparsity', linewidth=2)
+        ax.plot(range(len(selectivity_index)), selectivity_index, 'm-', label='Selectivity Index', linewidth=2)
+        ax.set_xlabel('Layer', fontsize=12)
+        ax.set_ylabel('Selectivity Metrics', fontsize=12)
+        ax.set_title('Detailed Selectivity Analysis', fontsize=14)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        # 3. Gradient Analysis
+        ax = axes[0, 2]
+        gradient_mags = [results['microscopic'][l]['gradient_analysis']['sample_gradients']['mean_magnitude'] for l in layers]
+        smoothness = [results['microscopic'][l]['gradient_analysis']['smoothness']['mean_smoothness'] for l in layers]
+        
+        ax.plot(range(len(gradient_mags)), gradient_mags, 'purple', label='Gradient Magnitude', linewidth=2)
+        ax.set_xlabel('Layer', fontsize=12)
+        ax.set_ylabel('Gradient Magnitude', color='purple', fontsize=12)
+        ax.tick_params(axis='y', labelcolor='purple')
+        
+        ax2 = ax.twinx()
+        ax2.plot(range(len(smoothness)), smoothness, 'brown', label='Smoothness', linewidth=2)
+        ax2.set_ylabel('Smoothness Score', color='brown', fontsize=12)
+        ax2.tick_params(axis='y', labelcolor='brown')
+        
+        ax.set_title('Gradient & Smoothness Analysis', fontsize=14)
+        ax.grid(True, alpha=0.3)
+        
+        # 4. Activation Patterns Distribution
+        ax = axes[1, 0]
+        skewness_vals = [results['microscopic'][l]['activation_patterns']['distribution_stats']['skewness'] for l in layers]
+        kurtosis_vals = [results['microscopic'][l]['activation_patterns']['distribution_stats']['kurtosis'] for l in layers]
+        
+        ax.plot(range(len(skewness_vals)), skewness_vals, 'teal', label='Skewness', linewidth=2)
+        ax.plot(range(len(kurtosis_vals)), kurtosis_vals, 'navy', label='Kurtosis', linewidth=2)
+        ax.set_xlabel('Layer', fontsize=12)
+        ax.set_ylabel('Distribution Statistics', fontsize=12)
+        ax.set_title('Activation Distribution Analysis', fontsize=14)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        # 5. Neuron Health Score vs Information Flow
+        ax = axes[1, 1]
+        health_scores = [results['microscopic'][l]['dead_neurons']['neuron_health_score'] for l in layers]
+        i_xt = [results['macroscopic']['information_bottleneck']['layers'][l]['I_X_T'] for l in layers]
+        
+        ax.scatter(health_scores, i_xt, c=range(len(health_scores)), cmap='viridis', s=100, alpha=0.7)
+        ax.set_xlabel('Neuron Health Score', fontsize=12)
+        ax.set_ylabel('I(X;T)', fontsize=12)
+        ax.set_title('Health vs Information Flow', fontsize=14)
+        
+        # Add colorbar for layer index
+        cbar = plt.colorbar(ax.collections[0], ax=ax)
+        cbar.set_label('Layer Index')
+        ax.grid(True, alpha=0.3)
+        
+        # 6. Mesoscopic vs Macroscopic Connection
+        ax = axes[1, 2]
+        meso_coherence = [results['mesoscopic'][l]['layer_coherence'] for l in layers]
         meso_intrinsic_dim = [results['mesoscopic'][l]['intrinsic_dimensionality'] for l in layers]
         
-        ax.plot(range(len(micro_sparsity)), micro_sparsity, 'b-', label='Sparsity', linewidth=2)
-        ax.set_xlabel('Layer', fontsize=12)
-        ax.set_ylabel('Sparsity', color='b', fontsize=12)
-        ax.tick_params(axis='y', labelcolor='b')
-        
-        ax2 = ax.twinx()
-        ax2.plot(range(len(meso_intrinsic_dim)), meso_intrinsic_dim, 'r-', label='Intrinsic Dim', linewidth=2)
-        ax2.set_ylabel('Intrinsic Dimensionality', color='r', fontsize=12)
-        ax2.tick_params(axis='y', labelcolor='r')
-        
-        ax.set_title('Microscopic vs Mesoscopic Properties', fontsize=14)
-        ax.grid(True, alpha=0.3)
-        
-        # 2. Mesoscopic vs Macroscopic
-        ax = axes[0, 1]
-        meso_coherence = [results['mesoscopic'][l]['layer_coherence'] for l in layers]
-        macro_i_xt = [results['macroscopic']['information_bottleneck']['layers'][l]['I_X_T'] for l in layers]
-        
         ax.plot(range(len(meso_coherence)), meso_coherence, 'g-', label='Coherence', linewidth=2)
+        ax.plot(range(len(meso_intrinsic_dim)), meso_intrinsic_dim, 'r-', label='Intrinsic Dim', linewidth=2)
         ax.set_xlabel('Layer', fontsize=12)
-        ax.set_ylabel('Coherence', color='g', fontsize=12)
-        ax.tick_params(axis='y', labelcolor='g')
-        
-        ax2 = ax.twinx()
-        ax2.plot(range(len(macro_i_xt)), macro_i_xt, 'm-', label='I(X;T)', linewidth=2)
-        ax2.set_ylabel('I(X;T)', color='m', fontsize=12)
-        ax2.tick_params(axis='y', labelcolor='m')
-        
-        ax.set_title('Mesoscopic vs Macroscopic Properties', fontsize=14)
+        ax.set_ylabel('Mesoscopic Properties', fontsize=12)
+        ax.set_title('Mesoscopic Layer Properties', fontsize=14)
+        ax.legend()
         ax.grid(True, alpha=0.3)
         
-        # 3. Information plane trajectory
-        ax = axes[1, 0]
+        # 7. Information plane trajectory
+        ax = axes[2, 0]
         i_xt = [results['macroscopic']['information_bottleneck']['layers'][l]['I_X_T'] for l in layers]
         i_yt = [results['macroscopic']['information_bottleneck']['layers'][l]['I_Y_T'] for l in layers]
         
@@ -706,30 +1192,70 @@ class MultiscaleInformationAnalysis:
         ax.legend()
         ax.grid(True, alpha=0.3)
         
-        # 4. Cross-scale correlations
-        ax = axes[1, 1]
+        # 8. Individual Neuron Statistics Summary
+        ax = axes[2, 1]
+        avg_active_fractions = [results['microscopic'][l]['individual_neuron_stats']['summary']['avg_active_fraction'] for l in layers]
+        avg_response_sparsity = [results['microscopic'][l]['individual_neuron_stats']['summary']['avg_response_sparsity'] for l in layers]
+        
+        ax.plot(range(len(avg_active_fractions)), avg_active_fractions, 'cyan', label='Avg Active Fraction', linewidth=2)
+        ax.plot(range(len(avg_response_sparsity)), avg_response_sparsity, 'magenta', label='Avg Response Sparsity', linewidth=2)
+        ax.set_xlabel('Layer', fontsize=12)
+        ax.set_ylabel('Individual Neuron Metrics', fontsize=12)
+        ax.set_title('Individual Neuron Statistics', fontsize=14)
+        ax.legend()
+        ax.grid(True, alpha=0.3)
+        
+        # 9. Cross-scale correlations and summary
+        ax = axes[2, 2]
         cross_scale = results['cross_scale_connections']
         
-        # Create a summary table
-        ax.text(0.1, 0.9, 'Cross-Scale Correlations', transform=ax.transAxes, 
+        # Create enhanced summary
+        ax.text(0.1, 0.95, 'Microscopic Analysis Summary', transform=ax.transAxes, 
                fontsize=14, fontweight='bold')
         
-        y_pos = 0.8
+        # Add key microscopic metrics
+        y_pos = 0.85
+        
+        # Average dead neuron fraction
+        avg_dead = np.mean([results['microscopic'][l]['dead_neurons']['overall_dead_estimate'] for l in layers])
+        ax.text(0.1, y_pos, f"Avg Dead Neurons: {avg_dead:.3f}", transform=ax.transAxes, fontsize=11)
+        y_pos -= 0.08
+        
+        # Average selectivity
+        avg_selectivity = np.mean([results['microscopic'][l]['detailed_selectivity']['mean_selectivity_index'] for l in layers])
+        ax.text(0.1, y_pos, f"Avg Selectivity: {avg_selectivity:.3f}", transform=ax.transAxes, fontsize=11)
+        y_pos -= 0.08
+        
+        # Average gradient magnitude
+        avg_grad_mag = np.mean([results['microscopic'][l]['gradient_analysis']['sample_gradients']['mean_magnitude'] for l in layers])
+        ax.text(0.1, y_pos, f"Avg Gradient Mag: {avg_grad_mag:.3f}", transform=ax.transAxes, fontsize=11)
+        y_pos -= 0.08
+        
+        # Health score trend
+        health_scores = [results['microscopic'][l]['dead_neurons']['neuron_health_score'] for l in layers]
+        health_trend = "Improving" if health_scores[-1] > health_scores[0] else "Declining"
+        ax.text(0.1, y_pos, f"Health Trend: {health_trend}", transform=ax.transAxes, fontsize=11)
+        y_pos -= 0.08
+        
+        # Cross-scale correlations
+        ax.text(0.1, y_pos, "Cross-Scale Correlations:", transform=ax.transAxes, fontsize=12, fontweight='bold')
+        y_pos -= 0.08
+        
         if 'micro_meso_correlations' in cross_scale:
             for key, value in cross_scale['micro_meso_correlations'].items():
-                ax.text(0.1, y_pos, f"{key}: {value:.3f}", transform=ax.transAxes, fontsize=12)
-                y_pos -= 0.1
+                ax.text(0.15, y_pos, f"{key}: {value:.3f}", transform=ax.transAxes, fontsize=10)
+                y_pos -= 0.06
                 
         if 'meso_macro_correlations' in cross_scale:
             for key, value in cross_scale['meso_macro_correlations'].items():
-                ax.text(0.1, y_pos, f"{key}: {value:.3f}", transform=ax.transAxes, fontsize=12)
-                y_pos -= 0.1
+                ax.text(0.15, y_pos, f"{key}: {value:.3f}", transform=ax.transAxes, fontsize=10)
+                y_pos -= 0.06
                 
         ax.axis('off')
         
-        plt.suptitle(f'Multiscale Analysis - {model_name}', fontsize=16)
+        plt.suptitle(f'Enhanced Microscopic Multiscale Analysis - {model_name}', fontsize=16, fontweight='bold')
         plt.tight_layout()
-        plt.savefig(self.output_dir / f'{model_name}_multiscale_analysis.png', 
+        plt.savefig(self.output_dir / f'{model_name}_enhanced_multiscale_analysis.png', 
                    dpi=150, bbox_inches='tight')
         plt.close()
 
