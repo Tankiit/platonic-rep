@@ -1,0 +1,21 @@
+{
+  "pure_geometric": {
+    "cosine_similarity": 0.9910169446707917,
+    "mse": 0.017839139072195257,
+    "method": "lowrank",
+    "pattern": "baseline"
+  },
+  "hybrid_refined": {
+    "cosine_similarity": 0.9910169446707792,
+    "mse": 0.01783913907218604,
+    "method": "geometric_only",
+    "uses_refinement": false,
+    "pattern": "geometric_initialization_plus_learning"
+  },
+  "ensemble_geometric": {
+    "cosine_similarity": 0.9935774163337487,
+    "mse": 0.01302524890290806,
+    "method": "ensemble_of_3_methods",
+    "pattern": "ensemble"
+  }
+}

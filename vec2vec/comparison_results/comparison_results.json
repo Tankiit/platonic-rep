@@ -1,0 +1,36 @@
+{
+  "geometric_procrustes": {
+    "cosine_similarity": 0.9956946969032288,
+    "mse": 1.1087162494659424,
+    "training_time": 0.05330681800842285,
+    "method_used": "procrustes",
+    "category": "geometric"
+  },
+  "geometric_cca": {
+    "cosine_similarity": 0.6435826958594838,
+    "mse": 76.70227028085291,
+    "training_time": 2.7274723052978516,
+    "method_used": "cca",
+    "category": "geometric"
+  },
+  "geometric_lowrank": {
+    "cosine_similarity": 0.9702864566462227,
+    "mse": 7.4841167577427585,
+    "training_time": 0.0636451244354248,
+    "method_used": "lowrank",
+    "category": "geometric"
+  },
+  "geometric_auto": {
+    "cosine_similarity": 0.9956946969032288,
+    "mse": 1.1087162494659424,
+    "training_time": 0.01489877700805664,
+    "method_used": "procrustes",
+    "category": "geometric"
+  },
+  "adversarial": {
+    "cosine_similarity": 0.9931817650794983,
+    "mse": 1.7681491374969482,
+    "training_time": 2.216456174850464,
+    "category": "adversarial"
+  }
+}

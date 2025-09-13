@@ -1,0 +1,28 @@
+{
+  "alignment_metrics": {
+    "geometric": {
+      "cosine_similarity": 0.9795892418568721,
+      "mse": 0.2008730397624974,
+      "method_used": "lowrank",
+      "structure_preservation": 0.6468406831003544,
+      "target_matching": 0.3803302401154434,
+      "distance_preservation": 0.6460512827676594,
+      "category": "geometric"
+    }
+  },
+  "detailed_analysis": {
+    "geometric": {
+      "mean_dim_correlation": 0.4278077963391067,
+      "std_dim_correlation": 0.13371922785191157,
+      "min_dim_correlation": 0.05699229097971254,
+      "max_dim_correlation": 0.7538259736145481,
+      "neighbor_preservation": 0.42960000000000004
+    }
+  },
+  "configuration": {
+    "model_a": "stella",
+    "model_b": "gte",
+    "n_samples": 1000,
+    "has_pretrained": false
+  }
+}

@@ -100,10 +100,256 @@ class GeometricVec2Vec:
         
     def _fit_cca(self, embeddings_A: np.ndarray, embeddings_B: np.ndarray):
         """
-        Canonical Correlation Analysis: finds linear combinations that are maximally correlated.
+        Choose between standard CCA and geometric CCA based on data characteristics.
+        """
+        # Use geometric CCA for better structure preservation
+        try:
+            self._fit_cca_geometric(embeddings_A, embeddings_B)
+        except Exception as e:
+            print(f"Geometric CCA failed ({e}), trying standard CCA")
+            self._fit_cca_standard(embeddings_A, embeddings_B)
+    
+    def _fit_cca_geometric(self, embeddings_A: np.ndarray, embeddings_B: np.ndarray):
+        """
+        Geometrically-enhanced CCA that preserves structure better.
+        """
+        from scipy.linalg import eigh, sqrtm
+        from sklearn.preprocessing import StandardScaler
+        from sklearn.neighbors import NearestNeighbors
         
-        This is useful when the representations have different intrinsic dimensionalities
-        but share common semantic structure.
+        n_samples = embeddings_A.shape[0]
+        
+        # 1. Preprocessing with structure preservation
+        # Instead of just centering, we'll use a softer normalization
+        A_centered = embeddings_A - embeddings_A.mean(axis=0)
+        B_centered = embeddings_B - embeddings_B.mean(axis=0)
+        
+        # Compute optimal scaling to preserve distances
+        A_scale = np.sqrt(np.trace(A_centered.T @ A_centered) / n_samples)
+        B_scale = np.sqrt(np.trace(B_centered.T @ B_centered) / n_samples)
+        
+        # Scale to unit Frobenius norm
+        A_normalized = A_centered / A_scale if A_scale > 1e-8 else A_centered
+        B_normalized = B_centered / B_scale if B_scale > 1e-8 else B_centered
+        
+        # 2. Compute neighbor structure for geometric regularization
+        k_neighbors = min(50, n_samples // 10)
+        nbrs_A = NearestNeighbors(n_neighbors=k_neighbors).fit(A_normalized)
+        nbrs_B = NearestNeighbors(n_neighbors=k_neighbors).fit(B_normalized)
+        
+        # Get neighbor graphs
+        dist_A, idx_A = nbrs_A.kneighbors(A_normalized)
+        dist_B, idx_B = nbrs_B.kneighbors(B_normalized)
+        
+        # 3. Compute covariance with geometric regularization
+        C_AA = A_normalized.T @ A_normalized / (n_samples - 1)
+        C_BB = B_normalized.T @ B_normalized / (n_samples - 1)
+        C_AB = A_normalized.T @ B_normalized / (n_samples - 1)
+        
+        # Add geometric regularization term
+        # This encourages preserving local structure
+        geometry_weight = 0.1  # Tune this
+        
+        # Compute Laplacian regularization
+        L_A = np.zeros_like(C_AA)
+        L_B = np.zeros_like(C_BB)
+        
+        for i in range(n_samples):
+            for j, neighbor in enumerate(idx_A[i, 1:]):  # Skip self
+                if j < len(idx_A[i]) - 1:  # Safety check
+                    weight = np.exp(-dist_A[i, j+1]**2 / 2)
+                    diff = A_normalized[i] - A_normalized[neighbor]
+                    L_A += weight * np.outer(diff, diff) / n_samples
+        
+        for i in range(n_samples):
+            for j, neighbor in enumerate(idx_B[i, 1:]):
+                if j < len(idx_B[i]) - 1:  # Safety check
+                    weight = np.exp(-dist_B[i, j+1]**2 / 2)
+                    diff = B_normalized[i] - B_normalized[neighbor]
+                    L_B += weight * np.outer(diff, diff) / n_samples
+        
+        # 4. Adaptive regularization with geometric awareness
+        # Estimate effective rank using eigenvalue decay
+        eigvals_A = np.linalg.eigvalsh(C_AA)
+        eigvals_B = np.linalg.eigvalsh(C_BB)
+        
+        # Find elbow in eigenvalue spectrum
+        def find_effective_rank(eigvals, threshold=0.95):
+            eigvals = np.sort(eigvals)[::-1]
+            eigvals = eigvals[eigvals > 0]
+            if len(eigvals) == 0:
+                return 1
+            cumsum = np.cumsum(eigvals)
+            total = cumsum[-1]
+            return max(1, np.argmax(cumsum / total > threshold) + 1)
+        
+        rank_A = find_effective_rank(eigvals_A)
+        rank_B = find_effective_rank(eigvals_B)
+        effective_rank = min(rank_A, rank_B)
+        
+        print(f"Effective ranks: A={rank_A}, B={rank_B}, using {effective_rank}")
+        
+        # Adaptive regularization based on effective rank
+        reg_base = 1e-6
+        reg_factor = max(1, np.log(embeddings_A.shape[1] / max(effective_rank, 1)))
+        reg = reg_base * reg_factor
+        
+        # Apply regularization with geometric term
+        C_AA_reg = C_AA + reg * np.eye(C_AA.shape[0]) + geometry_weight * L_A
+        C_BB_reg = C_BB + reg * np.eye(C_BB.shape[0]) + geometry_weight * L_B
+        
+        # 5. Solve CCA with Cholesky decomposition for stability
+        try:
+            # Cholesky decomposition
+            L_A_chol = np.linalg.cholesky(C_AA_reg)
+            L_B_chol = np.linalg.cholesky(C_BB_reg)
+            
+            # Whitened cross-covariance
+            C_AB_white = np.linalg.solve(L_A_chol, C_AB)
+            C_AB_white = np.linalg.solve(L_B_chol.T, C_AB_white.T).T
+            
+            # SVD of whitened cross-covariance
+            U, S, Vt = np.linalg.svd(C_AB_white, full_matrices=False)
+            
+            # CCA directions
+            A_dirs = np.linalg.solve(L_A_chol.T, U)
+            B_dirs = np.linalg.solve(L_B_chol.T, Vt.T)
+            
+        except np.linalg.LinAlgError:
+            print("Cholesky failed, using eigendecomposition")
+            # Fallback to eigendecomposition
+            A_dirs, B_dirs, S = self._fit_cca_eigendecomp(A_normalized, B_normalized, C_AA_reg, C_BB_reg, C_AB)
+        
+        # 6. Select components adaptively
+        # Use both correlation strength and variance explained
+        n_components = min(
+            effective_rank,
+            embeddings_A.shape[1],
+            embeddings_B.shape[1],
+            n_samples // 3,
+            len(S)
+        )
+        
+        # Weight components by their importance
+        component_scores = S[:n_components]**2  # Square to emphasize differences
+        component_weights = component_scores / component_scores.sum() if component_scores.sum() > 0 else np.ones(n_components) / n_components
+        
+        print(f"Using {n_components} components, top correlations: {S[:min(5, len(S))]}")
+        
+        # 7. Create structure-preserving transformation
+        A_dirs = A_dirs[:, :n_components]
+        B_dirs = B_dirs[:, :n_components]
+        
+        # Store all parameters
+        self.cca_params = {
+            'A_dirs': A_dirs,
+            'B_dirs': B_dirs,
+            'A_mean': embeddings_A.mean(axis=0),
+            'B_mean': embeddings_B.mean(axis=0),
+            'A_scale': A_scale,
+            'B_scale': B_scale,
+            'correlations': S[:n_components],
+            'component_weights': component_weights,
+            'n_components': n_components
+        }
+        
+        # 8. Learn direct transformation with structure preservation
+        # Project training data
+        A_proj = A_normalized @ A_dirs
+        B_proj = B_normalized @ B_dirs
+        
+        # Weight by correlation strength
+        A_proj_weighted = A_proj * np.sqrt(component_weights)
+        B_proj_weighted = B_proj * np.sqrt(component_weights)
+        
+        # Learn mapping that preserves both correlation and structure
+        # We'll use a combination of direct mapping and neighbor preservation
+        
+        # Direct linear mapping
+        ridge_lambda = 1e-4
+        W_direct = np.linalg.solve(
+            A_proj_weighted.T @ A_proj_weighted + ridge_lambda * np.eye(n_components),
+            A_proj_weighted.T @ B_normalized
+        )
+        
+        # Store transformation matrices
+        self.W_A_to_B = A_dirs @ W_direct
+        
+        # Similarly for B to A
+        W_direct_rev = np.linalg.solve(
+            B_proj_weighted.T @ B_proj_weighted + ridge_lambda * np.eye(n_components),
+            B_proj_weighted.T @ A_normalized
+        )
+        self.W_B_to_A = B_dirs @ W_direct_rev
+        
+        # 9. Create transformation functions
+        def transform_A_to_B(x):
+            if x.ndim == 1:
+                x = x.reshape(1, -1)
+            
+            # Apply same preprocessing
+            x_centered = x - self.cca_params['A_mean']
+            x_normalized = x_centered / self.cca_params['A_scale'] if self.cca_params['A_scale'] > 1e-8 else x_centered
+            
+            # Direct transformation
+            x_transformed = x_normalized @ self.W_A_to_B
+            
+            # Denormalize
+            result = x_transformed * self.cca_params['B_scale'] + self.cca_params['B_mean']
+            
+            return result[0] if x.shape[0] == 1 else result
+        
+        def transform_B_to_A(x):
+            if x.ndim == 1:
+                x = x.reshape(1, -1)
+            
+            x_centered = x - self.cca_params['B_mean']
+            x_normalized = x_centered / self.cca_params['B_scale'] if self.cca_params['B_scale'] > 1e-8 else x_centered
+            x_transformed = x_normalized @ self.W_B_to_A
+            result = x_transformed * self.cca_params['A_scale'] + self.cca_params['A_mean']
+            
+            return result[0] if x.shape[0] == 1 else result
+        
+        self.transform_A_to_B = transform_A_to_B
+        self.transform_B_to_A = transform_B_to_A
+        
+        # 10. Store detailed metrics
+        self.alignment_info = {
+            'method': 'cca_geometric',
+            'n_components': n_components,
+            'correlations': S[:n_components].tolist(),
+            'mean_correlation': float(np.mean(S[:n_components])),
+            'effective_rank': int(effective_rank),
+            'regularization': float(reg),
+            'geometry_weight': float(geometry_weight)
+        }
+        
+        print(f"Geometric CCA complete: mean correlation={np.mean(S[:n_components]):.4f}")
+
+    def _fit_cca_eigendecomp(self, A, B, C_AA, C_BB, C_AB):
+        """Fallback CCA using eigendecomposition"""
+        # Compute sqrt inverse using eigendecomposition
+        def matrix_sqrt_inv(C, reg=1e-6):
+            eigvals, eigvecs = eigh(C)
+            eigvals_inv = np.where(eigvals > reg, 1.0 / np.sqrt(eigvals), 0)
+            return eigvecs @ np.diag(eigvals_inv) @ eigvecs.T
+        
+        C_AA_sqrt_inv = matrix_sqrt_inv(C_AA)
+        C_BB_sqrt_inv = matrix_sqrt_inv(C_BB)
+        
+        # Form matrix for eigendecomposition
+        M = C_AA_sqrt_inv @ C_AB @ C_BB_sqrt_inv
+        U, S, Vt = np.linalg.svd(M, full_matrices=False)
+        
+        # CCA directions
+        A_dirs = C_AA_sqrt_inv @ U
+        B_dirs = C_BB_sqrt_inv @ Vt.T
+        
+        return A_dirs, B_dirs, S
+
+    def _fit_cca_standard(self, embeddings_A: np.ndarray, embeddings_B: np.ndarray):
+        """
+        Standard CCA fallback implementation.
         """
         # Determine number of components (min of dimensions and samples)
         n_components = min(embeddings_A.shape[1], embeddings_B.shape[1], embeddings_A.shape[0] // 3, 50)
@@ -153,15 +399,15 @@ class GeometricVec2Vec:
             correlation_score = cca.score(embeddings_A, embeddings_B)
             
             self.alignment_info = {
-                'method': 'cca',
+                'method': 'cca_standard',
                 'n_components': n_components,
                 'canonical_correlations': correlation_score
             }
             
-            print(f"CCA alignment complete with {n_components} components. Correlation score: {correlation_score:.4f}")
+            print(f"Standard CCA alignment complete with {n_components} components. Correlation score: {correlation_score:.4f}")
             
         except Exception as e:
-            print(f"CCA failed ({e}), falling back to Procrustes")
+            print(f"Standard CCA failed ({e}), falling back to Procrustes")
             self._fit_procrustes(embeddings_A, embeddings_B)
         
     def _fit_lowrank_alignment(self, embeddings_A: np.ndarray, embeddings_B: np.ndarray):
