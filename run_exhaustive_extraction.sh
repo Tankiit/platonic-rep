@@ -5,56 +5,87 @@
 
 echo "Starting exhaustive feature extraction..."
 
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --model)
+            MODEL="$2"
+            shift 2
+            ;;
+        --dataset)
+            DATASET="$2"
+            shift 2
+            ;;
+        --output_dir)
+            OUTPUT_DIR="$2"
+            shift 2
+            ;;
+        --data_dir)
+            DATA_DIR="$2"
+            shift 2
+            ;;
+        --model_type)
+            MODEL_TYPE="$2"
+            shift 2
+            ;;
+        --save_features)
+            SAVE_FEATURES=true
+            shift
+            ;;
+        *)
+            echo "Unknown option $1"
+            shift
+            ;;
+    esac
+done
+
 # Set default parameters
-DATASET=${1:-"prh"}
-SUBSET=${2:-"wit_1024"}
-BATCH_SIZE=${3:-4}
-NUM_SAMPLES=${4:-1024}
-OUTPUT_DIR=${5:-"./results/features"}
+DATASET=${DATASET:-"cifar10"}
+MODEL=${MODEL:-"resnet34"}
+BATCH_SIZE=${BATCH_SIZE:-4}
+NUM_SAMPLES=${NUM_SAMPLES:-1024}
+OUTPUT_DIR=${OUTPUT_DIR:-"./results/features"}
+DATA_DIR=${DATA_DIR:-"/home/mukherjee/research/data"}
+MODEL_TYPE=${MODEL_TYPE:-"vision"}
 
 echo "Configuration:"
+echo "  Model: $MODEL"
 echo "  Dataset: $DATASET"
-echo "  Subset: $SUBSET"
 echo "  Batch Size: $BATCH_SIZE"
 echo "  Num Samples: $NUM_SAMPLES"
 echo "  Output Directory: $OUTPUT_DIR"
+echo "  Data Directory: $DATA_DIR"
+echo "  Model Type: $MODEL_TYPE"
 
 # Create output directory
 mkdir -p "$OUTPUT_DIR"
 
-# Run exhaustive extraction for both language and vision models
-echo "Running exhaustive language model extraction..."
-python extract_features.py \
-    --modelset exhaustive \
-    --modality language \
-    --dataset "$DATASET" \
-    --subset "$SUBSET" \
-    --batch_size "$BATCH_SIZE" \
-    --num_samples "$NUM_SAMPLES" \
-    --output_dir "$OUTPUT_DIR" \
-    --pool avg
+# Run feature extraction based on model type
+if [ "$MODEL_TYPE" = "language" ]; then
+    echo "Running language model extraction for $MODEL..."
+    python extract_features.py \
+        --models "$MODEL" \
+        --modality language \
+        --dataset "$DATASET" \
+        --subset "" \
+        --batch_size "$BATCH_SIZE" \
+        --num_samples "$NUM_SAMPLES" \
+        --output_dir "$OUTPUT_DIR" \
+        --data_dir "$DATA_DIR" \
+        --pool avg
+else
+    echo "Running vision model extraction for $MODEL..."
+    python extract_features.py \
+        --models "$MODEL" \
+        --modality vision \
+        --dataset "$DATASET" \
+        --subset "" \
+        --batch_size "$BATCH_SIZE" \
+        --num_samples "$NUM_SAMPLES" \
+        --output_dir "$OUTPUT_DIR" \
+        --data_dir "$DATA_DIR" \
+        --pool cls
+fi
 
-echo "Running exhaustive vision model extraction..."
-python extract_features.py \
-    --modelset exhaustive \
-    --modality vision \
-    --dataset "$DATASET" \
-    --subset "$SUBSET" \
-    --batch_size "$BATCH_SIZE" \
-    --num_samples "$NUM_SAMPLES" \
-    --output_dir "$OUTPUT_DIR" \
-    --pool cls
-
-echo "Running exhaustive vision model extraction with average pooling..."
-python extract_features.py \
-    --modelset exhaustive \
-    --modality vision \
-    --dataset "$DATASET" \
-    --subset "$SUBSET" \
-    --batch_size "$BATCH_SIZE" \
-    --num_samples "$NUM_SAMPLES" \
-    --output_dir "$OUTPUT_DIR" \
-    --pool avg
-
-echo "Exhaustive feature extraction completed!"
+echo "Feature extraction completed!"
 echo "Results saved to: $OUTPUT_DIR"

@@ -22,8 +22,12 @@ def run_comprehensive_multiscale():
     print("COMPREHENSIVE MULTISCALE ANALYSIS PIPELINE")
     print("=" * 80)
     
+    # Get data directory and results directory from environment variables
+    data_dir = os.environ.get('DATA_DIR', '/home/cril/mukherjee/projects/data')
+    results_dir = os.environ.get('RESULTS_DIR', '/home/cril/mukherjee/projects/platonic-rep')
+    
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    base_output_dir = f"./results/comprehensive_multiscale_{timestamp}/"
+    base_output_dir = f"{results_dir}/results/comprehensive_multiscale_{timestamp}/"
     Path(base_output_dir).mkdir(parents=True, exist_ok=True)
     
     # Vision models from your specification
@@ -183,22 +187,26 @@ def extract_vision_features(models, dataset, output_dir):
     """Extract features for vision models using run_exhaustive_extraction"""
     results = {}
     
+    # Get data directory from environment
+    data_dir = os.environ.get('DATA_DIR', '/home/cril/mukherjee/projects/data')
+    
     for model in models:
         print(f"    Extracting {model} features...")
         
         try:
             # Check if run_exhaustive_extraction exists
-            if not Path("run_exhaustive_extraction.py").exists():
-                print(f"      Warning: run_exhaustive_extraction.py not found, simulating...")
+            if not Path("run_exhaustive_extraction.sh").exists():
+                print(f"      Warning: run_exhaustive_extraction.sh not found, simulating...")
                 # Simulate feature extraction
                 results[model] = simulate_feature_extraction(model, dataset, 'vision')
                 continue
             
             # Run feature extraction
             cmd = [
-                "python", "run_exhaustive_extraction.py",
+                "bash", "run_exhaustive_extraction.sh",
                 "--model", model,
                 "--dataset", dataset,
+                "--data_dir", data_dir,
                 "--output_dir", f"{output_dir}/features/{dataset}/{model}",
                 "--save_features"
             ]
@@ -242,22 +250,26 @@ def extract_language_features(models, dataset, output_dir):
     """Extract features for language models"""
     results = {}
     
+    # Get data directory from environment
+    data_dir = os.environ.get('DATA_DIR', '/home/cril/mukherjee/projects/data')
+    
     for model in models:
         print(f"    Extracting {model} features...")
         
         try:
             # For language models, we might need a different extraction script
             # For now, simulate or use a generic approach
-            if not Path("run_exhaustive_extraction.py").exists():
+            if not Path("run_exhaustive_extraction.sh").exists():
                 print(f"      Warning: Language feature extraction not implemented, simulating...")
                 results[model] = simulate_feature_extraction(model, dataset, 'language')
                 continue
             
             # Attempt to run with language-specific parameters
             cmd = [
-                "python", "run_exhaustive_extraction.py",
+                "bash", "run_exhaustive_extraction.sh",
                 "--model", model,
                 "--dataset", dataset,
+                "--data_dir", data_dir,
                 "--output_dir", f"{output_dir}/features/{dataset}/{model}",
                 "--model_type", "language",
                 "--save_features"
@@ -504,7 +516,7 @@ This report presents a comprehensive multiscale analysis combining feature extra
 
 ## Pipeline Overview
 
-1. **Feature Extraction**: Used `run_exhaustive_extraction` to collect features from all models
+1. **Feature Extraction**: Used `run_exhaustive_extraction.sh` to collect features from all models
 2. **Multiscale Analysis**: Applied enhanced microscopic, mesoscopic, and macroscopic analysis
 3. **Cross-Modal Comparison**: Compared patterns between vision and language models
 
@@ -613,7 +625,7 @@ def main():
     
     print("\n🎉 Comprehensive Multiscale Analysis Complete!")
     print("\nTo run individual components:")
-    print("  python run_exhaustive_extraction.py --help")
+    print("  bash run_exhaustive_extraction.sh --help")
     print("  python multi_scale.py")
     print("  python microscopic_analysis.py")
 
