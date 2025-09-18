@@ -1,0 +1,37 @@
+2025-09-18 10:53:40.763361: I tensorflow/core/util/port.cc:113] oneDNN custom operations are on. You may see slightly different numerical results due to floating-point round-off errors from different computation orders. To turn them off, set the environment variable `TF_ENABLE_ONEDNN_OPTS=0`.
+2025-09-18 10:53:40.770343: E external/local_xla/xla/stream_executor/cuda/cuda_fft.cc:479] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2025-09-18 10:53:40.779884: E external/local_xla/xla/stream_executor/cuda/cuda_dnn.cc:10575] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2025-09-18 10:53:40.779903: E external/local_xla/xla/stream_executor/cuda/cuda_blas.cc:1442] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2025-09-18 10:53:40.786459: I tensorflow/core/platform/cpu_feature_guard.cc:210] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 AVX_VNNI FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2025-09-18 10:53:41.123544: W tensorflow/compiler/tf2tensorrt/utils/py_utils.cc:38] TF-TRT Warning: Could not find TensorRT
+Created 7 train pairs from 9 embeddings
+Created 2 val pairs from 9 embeddings
+
+Starting training on 7 train pairs, 2 val pairs
+Logs will be saved to runs/hyperprocrustes/20250918_105341
+
+To view training progress:
+  tensorboard --logdir ./runs/hyperprocrustes
+
+Epoch 1/100 [Train]:   0%|          | 0/4 [00:00<?, ?it/s]/home/tanmoy/research/Neural_Representation_Analysis/platonic-rep/vec2vec/hyperprocrustes.py:372: UserWarning: torch.linalg.svd: During SVD computation with the selected cusolver driver, batches 0, 1 failed to converge. A more accurate method will be used to compute the SVD as a fallback. Check doc at https://pytorch.org/docs/stable/generated/torch.linalg.svd.html (Triggered internally at ../aten/src/ATen/native/cuda/linalg/BatchLinearAlgebraLib.cpp:697.)
+  R = torch.matmul(I - A, torch.linalg.pinv(I_plus_A))
+Epoch 1/100 [Train]:   0%|          | 0/4 [00:06<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/tanmoy/research/Neural_Representation_Analysis/platonic-rep/vec2vec/train_hyperprocrustes.py", line 425, in <module>
+    main()
+  File "/home/tanmoy/research/Neural_Representation_Analysis/platonic-rep/vec2vec/train_hyperprocrustes.py", line 359, in main
+    trainer.train(
+  File "/home/tanmoy/research/Neural_Representation_Analysis/platonic-rep/vec2vec/hyperprocrustes.py", line 613, in train
+    losses = self.train_step(batch_data)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanmoy/research/Neural_Representation_Analysis/platonic-rep/vec2vec/hyperprocrustes.py", line 561, in train_step
+    losses = self.compute_alignment_loss(embeddings_A, embeddings_B, params)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanmoy/research/Neural_Representation_Analysis/platonic-rep/vec2vec/hyperprocrustes.py", line 488, in compute_alignment_loss
+    A_transformed = self.model.transform(embeddings_A, params, direction='A_to_B')
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/tanmoy/research/Neural_Representation_Analysis/platonic-rep/vec2vec/hyperprocrustes.py", line 158, in transform
+    transformed = torch.matmul(centered, params['rotation']) * params['scale']
+                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~
+RuntimeError: The size of tensor a (50) must match the size of tensor b (2) at non-singleton dimension 1
