@@ -14,6 +14,8 @@ import time
 from datetime import datetime
 warnings.filterwarnings('ignore')
 
+DATASETS_PATH = "/home/naloween/Documents/datasets/"
+
 # TensorBoard imports
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -77,13 +79,14 @@ class MultiModelAnalyzer:
         }
         
         # Supported datasets
-        self.supported_datasets = ['cifar10', 'cifar100', 'svhn']
+        self.supported_datasets = ['cifar10', 'cifar100', 'svhn', 'coco']
         
         # Dataset configurations
         self.dataset_configs = {
             'cifar10': {'num_classes': 10, 'input_size': 32, 'channels': 3},
             'cifar100': {'num_classes': 100, 'input_size': 32, 'channels': 3},
-            'svhn': {'num_classes': 10, 'input_size': 32, 'channels': 3}
+            'svhn': {'num_classes': 10, 'input_size': 32, 'channels': 3},
+            'coco': {'num_classes': 10, 'input_size': 32, 'channels': 3}
         }
         
         # Experiment tracking
@@ -136,7 +139,7 @@ class MultiModelAnalyzer:
                 model = timm.create_model(model_name, pretrained=False, num_classes=num_classes)
             
             # Adjust input size for CIFAR/SVHN if needed
-            if dataset in ['cifar10', 'cifar100', 'svhn']:
+            if dataset in ['cifar10', 'cifar100', 'svhn', 'coco']:
                 # Some models expect 224x224, but CIFAR/SVHN are 32x32
                 # We'll use interpolation to handle this
                 pass
@@ -199,7 +202,7 @@ class MultiModelAnalyzer:
                     transforms.ToTensor(),
                     transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
                 ])
-                dataset_obj = datasets.CIFAR10('/Users/tanmoy/research/data', train=(split=='train'), download=False, transform=transform)
+                dataset_obj = datasets.CIFAR10(DATASETS_PATH, train=(split=='train'), download=True, transform=transform)
                 num_classes = 10
                 
             elif dataset == 'cifar100':
@@ -208,7 +211,7 @@ class MultiModelAnalyzer:
                     transforms.ToTensor(),
                     transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
                 ])
-                dataset_obj = datasets.CIFAR100('/Users/tanmoy/research/data', train=(split=='train'), download=False, transform=transform)
+                dataset_obj = datasets.CIFAR100(DATASETS_PATH, train=(split=='train'), download=True, transform=transform)
                 num_classes = 100
                 
             elif dataset == 'svhn':
@@ -217,17 +220,38 @@ class MultiModelAnalyzer:
                     transforms.ToTensor(),
                     transforms.Normalize((0.4377, 0.4438, 0.4728), (0.1980, 0.2010, 0.1970))
                 ])
-                dataset_obj = datasets.SVHN('/Users/tanmoy/research/data', split=split, download=False, transform=transform)
+                dataset_obj = datasets.SVHN(DATASETS_PATH, split=split, download=True, transform=transform)
                 num_classes = 10
-                
+            
+            elif dataset == "coco":                
+                transform = transforms.Compose([
+                    transforms.Resize((224,224)),
+                    transforms.ToTensor(),
+                ])                 
+                dataset_obj = datasets.CocoCaptions(DATASETS_PATH+"coco/train2017", DATASETS_PATH+"coco/annotations/captions_train2017.json", transform=transform)
+                num_classes = 0
+
             else:
                 raise ValueError(f"Unsupported dataset: {dataset}")
             
             # Create data loader
-            data_loader = torch.utils.data.DataLoader(
-                dataset_obj, batch_size=batch_size, shuffle=(split=='train'), 
-                num_workers=2, pin_memory=True
-            )
+            if dataset == "coco":
+                def collate_fn(batch):
+                    # batch is a list of (image, captions)
+                    images, captions = zip(*batch)
+                    images = torch.stack(images)
+                    captions = list(captions)
+                    return images, captions
+                
+                data_loader = torch.utils.data.DataLoader(
+                    dataset_obj, batch_size=batch_size, shuffle=(split=='train'), 
+                    num_workers=2, pin_memory=True, collate_fn=collate_fn
+                )
+            else:
+                data_loader = torch.utils.data.DataLoader(
+                    dataset_obj, batch_size=batch_size, shuffle=(split=='train'), 
+                    num_workers=2, pin_memory=True
+                )
             
             return data_loader, num_classes
             
@@ -274,7 +298,11 @@ class MultiModelAnalyzer:
                         all_features['features'] = []
                     all_features['features'].append(features.cpu())
                 
-                batch_features.append(targets.cpu())
+                if isinstance(targets, torch.Tensor):
+                    batch_features.append(targets.cpu())
+                else:
+                    # For datasets like COCO where targets are lists
+                    batch_features.append(targets)
                 
                 # Limit number of samples for analysis (reduced for faster testing)
                 if batch_idx >= 8:  # ~512 samples with batch_size=64 (very fast)
@@ -315,11 +343,15 @@ class MultiModelAnalyzer:
                     # Truncate to max dimension
                     stacked_features[:, i, :] = layer_features[:, :max_feature_dim]
         
+        if isinstance(batch_features[0], torch.Tensor):
+            targets = torch.cat(batch_features, dim=0)
+        else:
+            targets = [feat for batch_feature in batch_features for feat in batch_feature]
         return {
             'feats': stacked_features,
             'layer_names': layer_names,
             'feature_dims': feature_dims,  # Store original dimensions
-            'targets': torch.cat(batch_features, dim=0)
+            'targets': targets
         }
     
     def run_analysis(self, model_name: str, dataset: str, pretrained: bool = True, 
@@ -817,7 +849,7 @@ def main():
     
     # Dataset selection
     parser.add_argument('--datasets', nargs='+', 
-                       default=['cifar10', 'cifar100', 'svhn'],
+                       default=['cifar10', 'cifar100', 'svhn', 'coco'],
                        help='List of datasets to use')
     
     # Analysis options
