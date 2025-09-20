@@ -534,14 +534,28 @@ class HyperProcrustesTrainer:
         # Number of random projections
         num_projections = 50
 
+        # Flatten batch dimensions if needed
+        if len(X.shape) == 3:
+            batch_size = X.shape[0]
+            X = X.reshape(batch_size * X.shape[1], -1)
+            Y = Y.reshape(batch_size * Y.shape[1], -1)
+
+        # Make sure we have the same number of samples
+        min_samples = min(X.shape[0], Y.shape[0])
+        X = X[:min_samples]
+        Y = Y[:min_samples]
+
         # Generate random projection directions
-        d = X.shape[-1]
+        d = min(X.shape[-1], Y.shape[-1])  # Handle dimension mismatch
+        X = X[:, :d]
+        Y = Y[:, :d]
+
         projections = torch.randn(num_projections, d, device=X.device)
         projections = F.normalize(projections, p=2, dim=1)
 
         # Project both distributions
-        X_projected = torch.matmul(X.reshape(-1, d), projections.t())
-        Y_projected = torch.matmul(Y.reshape(-1, d), projections.t())
+        X_projected = torch.matmul(X, projections.t())
+        Y_projected = torch.matmul(Y, projections.t())
 
         # Sort projected values
         X_sorted, _ = torch.sort(X_projected, dim=0)

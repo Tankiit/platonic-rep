@@ -210,7 +210,7 @@ class PlatonicDatasetLoader:
         from io import BytesIO
 
         # Load COCO captions dataset from HuggingFace
-        dataset = load_dataset('HuggingFaceM4/COCO', split='validation')
+        dataset = load_dataset('HuggingFaceM4/COCO', split='validation', trust_remote_code=True)
 
         if num_samples:
             dataset = dataset.select(range(min(num_samples, len(dataset))))
@@ -246,7 +246,7 @@ class PlatonicDatasetLoader:
         """Load Conceptual Captions dataset."""
         from datasets import load_dataset
 
-        dataset = load_dataset('conceptual_captions', split='validation')
+        dataset = load_dataset('conceptual_captions', split='validation', trust_remote_code=True)
 
         if num_samples:
             dataset = dataset.select(range(min(num_samples, len(dataset))))
@@ -511,6 +511,9 @@ class PlatonicAnalyzer:
         # Align dimensions if needed
         if vision_features.shape[1] != language_features.shape[1]:
             target_dim = min(vision_features.shape[1], language_features.shape[1])
+
+            # Make sure target_dim doesn't exceed number of samples
+            target_dim = min(target_dim, min_samples - 1)
 
             # Use PCA for dimension reduction
             from sklearn.decomposition import PCA
@@ -839,16 +842,20 @@ class PlatonicAnalyzer:
                 ckas.append(pair_data['alignment']['cka'])
                 cosines.append(pair_data['alignment']['mean_similarity'])
 
-        ax.scatter(cosines, ckas, alpha=0.5)
-        ax.set_xlabel('Mean Cosine Similarity')
-        ax.set_ylabel('CKA Score')
-        ax.set_title('CKA vs Cosine Similarity')
-        ax.grid(True, alpha=0.3)
+        if ckas and cosines:
+            ax.scatter(cosines, ckas, alpha=0.5)
+            ax.set_xlabel('Mean Cosine Similarity')
+            ax.set_ylabel('CKA Score')
+            ax.set_title('CKA vs Cosine Similarity')
+            ax.grid(True, alpha=0.3)
 
-        # Add diagonal reference line
-        lims = [max(0, min(min(cosines), min(ckas))), min(1, max(max(cosines), max(ckas)))]
-        ax.plot(lims, lims, 'k--', alpha=0.3, label='y=x')
-        ax.legend()
+            # Add diagonal reference line
+            lims = [max(0, min(min(cosines), min(ckas))), min(1, max(max(cosines), max(ckas)))]
+            ax.plot(lims, lims, 'k--', alpha=0.3, label='y=x')
+            ax.legend()
+        else:
+            ax.text(0.5, 0.5, 'No data available', ha='center', va='center', transform=ax.transAxes)
+            ax.set_title('CKA vs Cosine Similarity')
 
     def plot_top_pairs(self, ax, model_performance):
         """Plot top performing model pairs."""
