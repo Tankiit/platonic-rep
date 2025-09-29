@@ -15,6 +15,70 @@
       "language_model": "distilbert-base-uncased",
       "language_layer": "transformer.layer.2.attention.out_lin",
       "dataset": "cifar10"
+    },
+    {
+      "name": "ResNet50_vs_BERT_on_CIFAR100",
+      "vision_model": "resnet50",
+      "vision_layer": "layer3.0.conv1",
+      "language_model": "bert-base-uncased",
+      "language_layer": "encoder.layer.6.attention.output.dense",
+      "dataset": "cifar100"
+    },
+    {
+      "name": "EfficientNetB0_vs_RoBERTa_on_CIFAR10",
+      "vision_model": "efficientnet_b0",
+      "vision_layer": "features.4.0",
+      "language_model": "roberta-base",
+      "language_layer": "encoder.layer.6.attention.output.dense",
+      "dataset": "cifar10"
+    },
+    {
+      "name": "VGG16_vs_DistilBERT_on_FashionMNIST",
+      "vision_model": "vgg16",
+      "vision_layer": "features.14",
+      "language_model": "distilbert-base-uncased",
+      "language_layer": "transformer.layer.3.attention.out_lin",
+      "dataset": "fashion_mnist"
+    },
+    {
+      "name": "DenseNet121_vs_ALBERT_on_CIFAR10",
+      "vision_model": "densenet121",
+      "vision_layer": "features.denseblock2.denselayer6.conv1",
+      "language_model": "albert-base-v2",
+      "language_layer": "encoder.albert_layer_groups.0.albert_layers.0.attention.dense",
+      "dataset": "cifar10"
+    },
+    {
+      "name": "ViT_B_16_vs_BERT_on_CIFAR10",
+      "vision_model": "vit_b_16",
+      "vision_layer": "encoder.layers.encoder_layer_6.mlp.0",
+      "language_model": "bert-base-uncased",
+      "language_layer": "encoder.layer.6.attention.output.dense",
+      "dataset": "cifar10"
+    },
+    {
+      "name": "ConvNeXt_Tiny_vs_DistilBERT_on_SVHN",
+      "vision_model": "convnext_tiny",
+      "vision_layer": "features.3.0",
+      "language_model": "distilbert-base-uncased",
+      "language_layer": "transformer.layer.2.attention.out_lin",
+      "dataset": "svhn"
+    },
+    {
+      "name": "Swin_T_vs_RoBERTa_on_STL10",
+      "vision_model": "swin_t",
+      "vision_layer": "features.2.0",
+      "language_model": "roberta-base",
+      "language_layer": "encoder.layer.6.attention.output.dense",
+      "dataset": "stl10"
+    },
+    {
+      "name": "MobileNetV3_Large_vs_BERT_on_CIFAR100",
+      "vision_model": "mobilenet_v3_large",
+      "vision_layer": "features.7.block.0.0",
+      "language_model": "bert-base-uncased",
+      "language_layer": "encoder.layer.8.attention.output.dense",
+      "dataset": "cifar100"
     }
   ],
   "analysis_parameters": {

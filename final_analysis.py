@@ -13,23 +13,123 @@ warnings.filterwarnings('ignore')
 
 # --- Model and Data Factories ---
 def get_vision_model(name, device):
-    if name == 'resnet18':
-        return torchvision.models.resnet18(weights='IMAGENET1K_V1').to(device)
-    elif name == 'mobilenet_v2':
-        return torchvision.models.mobilenet_v2(weights='IMAGENET1K_V1').to(device)
-    else:
-        raise ValueError(f"Unknown vision model: {name}")
+    models_map = {
+        # ResNets
+        'resnet18': torchvision.models.resnet18,
+        'resnet34': torchvision.models.resnet34,
+        'resnet50': torchvision.models.resnet50,
+        'resnet101': torchvision.models.resnet101,
+        'resnet152': torchvision.models.resnet152,
+
+        # MobileNets
+        'mobilenet_v2': torchvision.models.mobilenet_v2,
+        'mobilenet_v3_small': torchvision.models.mobilenet_v3_small,
+        'mobilenet_v3_large': torchvision.models.mobilenet_v3_large,
+
+        # EfficientNets
+        'efficientnet_b0': torchvision.models.efficientnet_b0,
+        'efficientnet_b1': torchvision.models.efficientnet_b1,
+        'efficientnet_b2': torchvision.models.efficientnet_b2,
+        'efficientnet_b3': torchvision.models.efficientnet_b3,
+        'efficientnet_b4': torchvision.models.efficientnet_b4,
+        'efficientnet_b5': torchvision.models.efficientnet_b5,
+        'efficientnet_b6': torchvision.models.efficientnet_b6,
+        'efficientnet_b7': torchvision.models.efficientnet_b7,
+
+        # DenseNets
+        'densenet121': torchvision.models.densenet121,
+        'densenet161': torchvision.models.densenet161,
+        'densenet169': torchvision.models.densenet169,
+        'densenet201': torchvision.models.densenet201,
+
+        # VGG
+        'vgg11': torchvision.models.vgg11,
+        'vgg13': torchvision.models.vgg13,
+        'vgg16': torchvision.models.vgg16,
+        'vgg19': torchvision.models.vgg19,
+
+        # Vision Transformers
+        'vit_b_16': torchvision.models.vit_b_16,
+        'vit_b_32': torchvision.models.vit_b_32,
+        'vit_l_16': torchvision.models.vit_l_16,
+
+        # ConvNeXt
+        'convnext_tiny': torchvision.models.convnext_tiny,
+        'convnext_small': torchvision.models.convnext_small,
+        'convnext_base': torchvision.models.convnext_base,
+        'convnext_large': torchvision.models.convnext_large,
+
+        # Swin Transformers
+        'swin_t': torchvision.models.swin_t,
+        'swin_s': torchvision.models.swin_s,
+        'swin_b': torchvision.models.swin_b,
+    }
+
+    if name not in models_map:
+        raise ValueError(f"Unknown vision model: {name}. Available: {list(models_map.keys())}")
+
+    return models_map[name](weights='IMAGENET1K_V1').to(device)
 
 def get_dataset(name, preprocess, n_samples):
-    if name == 'mnist':
-        dataset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=preprocess)
-        labels = [f"a digit {label}" for label in dataset.targets]
-    elif name == 'cifar10':
-        dataset = torchvision.datasets.CIFAR10(root='/Users/tanmoy/research/data', train=True, download=False, transform=preprocess)
-        labels = [f"a photo of a {dataset.classes[label]}" for label in dataset.targets]
+    datasets_config = {
+        'mnist': {
+            'class': torchvision.datasets.MNIST,
+            'root': './data',
+            'label_template': lambda label, classes: f"a digit {label}"
+        },
+        'fashion_mnist': {
+            'class': torchvision.datasets.FashionMNIST,
+            'root': './data',
+            'label_template': lambda label, classes: f"a photo of {classes[label]}"
+        },
+        'cifar10': {
+            'class': torchvision.datasets.CIFAR10,
+            'root': '/Users/tanmoy/research/data',
+            'label_template': lambda label, classes: f"a photo of a {classes[label]}"
+        },
+        'cifar100': {
+            'class': torchvision.datasets.CIFAR100,
+            'root': '/Users/tanmoy/research/data',
+            'label_template': lambda label, classes: f"a photo of a {classes[label]}"
+        },
+        'svhn': {
+            'class': torchvision.datasets.SVHN,
+            'root': './data',
+            'label_template': lambda label, classes: f"a digit {label}",
+            'split': 'train'
+        },
+        'stl10': {
+            'class': torchvision.datasets.STL10,
+            'root': './data',
+            'label_template': lambda label, classes: f"a photo of a {classes[label]}",
+            'split': 'train'
+        }
+    }
+
+    if name not in datasets_config:
+        raise ValueError(f"Unknown dataset: {name}. Available: {list(datasets_config.keys())}")
+
+    config = datasets_config[name]
+
+    # Load dataset with appropriate parameters
+    if name == 'svhn' or name == 'stl10':
+        dataset = config['class'](root=config['root'], split=config['split'], download=True, transform=preprocess)
     else:
-        raise ValueError(f"Unknown dataset: {name}")
-    
+        dataset = config['class'](root=config['root'], train=True, download=True, transform=preprocess)
+
+    # Get class names if available
+    classes = getattr(dataset, 'classes', None)
+
+    # Generate labels
+    if hasattr(dataset, 'targets'):
+        targets = dataset.targets if isinstance(dataset.targets, list) else dataset.targets.tolist()
+    elif hasattr(dataset, 'labels'):
+        targets = dataset.labels if isinstance(dataset.labels, list) else dataset.labels.tolist()
+    else:
+        targets = list(range(len(dataset)))
+
+    labels = [config['label_template'](label, classes) for label in targets]
+
     loader = DataLoader(dataset, batch_size=n_samples, shuffle=True)
     vision_data, label_indices = next(iter(loader))
     texts = [labels[i] for i in label_indices]
