@@ -80,11 +80,17 @@ class RWAAnalyzer:
             
             elif model_type == 'language':
                 input_ids = data['input_ids'][:n_samples]
-                attention_mask = data['attention_mask'][:n_samples].to(torch.bool)
+                attention_mask = data['attention_mask'][:n_samples]
+                
+                # Create extended attention mask
+                extended_attention_mask = attention_mask.unsqueeze(1).unsqueeze(2)
+                extended_attention_mask = extended_attention_mask.to(dtype=next(model.parameters()).dtype)
+                extended_attention_mask = (1.0 - extended_attention_mask) * -10000.0
+
                 if layer_name == 'layer_2':
                     hidden_states = model.embeddings(input_ids)
                     for i in range(3): # Up to layer_2 (0, 1, 2)
-                        hidden_states = model.transformer.layer[i](hidden_states, attention_mask)[0]
+                        hidden_states = model.transformer.layer[i](hidden_states, extended_attention_mask)[0]
                     return hidden_states.mean(dim=1).cpu().numpy()
                 else:
                     raise NotImplementedError(f"Activation extraction for layer {layer_name} not implemented for distilbert")
