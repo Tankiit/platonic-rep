@@ -14,7 +14,134 @@ from torchvision.models.feature_extraction import create_feature_extractor
 from datasets import load_dataset
 from tasks import get_models
 from models import load_llm, load_tokenizer
-import utils 
+import utils
+
+# Model scale definitions
+SMALL_SCALE_MODELS = {
+    'vision': [
+        'vit_tiny_patch16_224',
+        'vit_small_patch16_224',
+        'resnet18',
+        'resnet34',
+        'mobilenetv2_050',
+        'mobilenetv2_100',
+        'efficientnet_b0',
+        'convnext_tiny'
+    ],
+    'language': [
+        'google/bert_uncased_L-2_H-128_A-2',  # Bert-Tiny
+        'google/bert_uncased_L-4_H-256_A-4',  # Bert-Mini
+        'google/bert_uncased_L-4_H-512_A-8',  # Bert-Small
+        'distilbert-base-uncased',
+        'albert-base-v2',
+        'gpt2'  # Base GPT-2 (124M params)
+    ],
+    'speech': [
+        'wav2vec2_small',
+        'whisper_tiny',
+        'hubert_small'
+    ]
+}
+
+MEDIUM_SCALE_MODELS = {
+    'vision': [
+        'resnet34',
+        'resnet50',
+        'vit_small_patch16_224',
+        'vit_base_patch16_224',
+        'convnext_small',
+        'efficientnet_b1',
+        'efficientnet_b2',
+        'swin_small_patch4_window7_224'
+    ],
+    'language': [
+        'bert-base-uncased',
+        'roberta-base',
+        'gpt2-medium',
+        'distilbert-base-uncased',
+        'albert-base-v2',
+        'electra-base-discriminator'
+    ],
+    'speech': [
+        'wav2vec2_base',
+        'hubert_base',
+        'whisper_small'
+    ]
+}
+
+LARGE_SCALE_MODELS = {
+    'vision': [
+        'resnet50',
+        'resnet101',
+        'resnet152',
+        'wide_resnet50_2',
+        'vit_base_patch16_224',
+        'vit_large_patch16_224',
+        'deit_base_patch16_224',
+        'convnext_base',
+        'convnext_large',
+        'efficientnet_b4',
+        'efficientnet_b7',
+        'swin_base_patch4_window7_224',
+        'swin_large_patch4_window7_224',
+        'regnet_y_32gf',
+        'beit_base_patch16_224'
+    ],
+    'language': [
+        'bert-large-uncased',
+        'roberta-large',
+        'xlm-roberta-large',
+        'gpt2-large',
+        'gpt2-xl',
+        't5-base',
+        't5-large',
+        'electra-large-discriminator',
+        'deberta-v3-large',
+        'xlnet-large-cased'
+    ],
+    'speech': [
+        'wav2vec2_large',
+        'wav2vec2_large_robust',
+        'hubert_large',
+        'whisper_base',
+        'whisper_medium',
+        'whisper_large',
+        'data2vec_audio_large'
+    ]
+}
+
+def get_model_scale(model_name, modality):
+    """
+    Determine the scale of a model based on its name and modality.
+    Returns 'small', 'medium', 'large', or 'unknown'.
+    """
+    model_name_lower = model_name.lower()
+
+    # Check in scale definitions
+    if modality in SMALL_SCALE_MODELS:
+        for small_model in SMALL_SCALE_MODELS[modality]:
+            if small_model.lower() in model_name_lower or model_name_lower in small_model.lower():
+                return 'small'
+
+    if modality in MEDIUM_SCALE_MODELS:
+        for medium_model in MEDIUM_SCALE_MODELS[modality]:
+            if medium_model.lower() in model_name_lower or model_name_lower in medium_model.lower():
+                return 'medium'
+
+    if modality in LARGE_SCALE_MODELS:
+        for large_model in LARGE_SCALE_MODELS[modality]:
+            if large_model.lower() in model_name_lower or model_name_lower in large_model.lower():
+                return 'large'
+
+    # Heuristics based on common naming patterns
+    if any(x in model_name_lower for x in ['tiny', 'small', 'mini']):
+        return 'small'
+    elif any(x in model_name_lower for x in ['base', 'medium']):
+        return 'medium'
+    elif any(x in model_name_lower for x in ['large', 'xl', 'xxl', 'huge']):
+        return 'large'
+
+    return 'unknown' 
 
 
 def check_model_availability(model_name, model_type="llm"):
@@ -260,7 +387,13 @@ def extract_lvm_features(filenames, dataset, args):
             for i, batch_end, indices in safe_batch_processing(dataset, args.batch_size):
                 with torch.no_grad():
                     try:
-                        ims = torch.stack([transform(dataset[j]['image']) for j in indices]).to(device)
+                        # Handle different dataset formats
+                        if isinstance(dataset, torch.utils.data.Dataset):
+                            # Torchvision dataset format: (image, label)
+                            ims = torch.stack([transform(dataset[j][0]) for j in indices]).to(device)
+                        else:
+                            # HuggingFace dataset format: {'image': ..., 'label': ...}
+                            ims = torch.stack([transform(dataset[j]['image']) for j in indices]).to(device)
                         
                         if return_nodes:
                             lvm_output = vision_model(ims)
@@ -380,6 +513,7 @@ Supported Model Families:
     parser.add_argument("--modality",       type=str, default="all", choices=["vision", "language", "all"],
                        help="Modality to extract features for")
     parser.add_argument("--output_dir",     type=str, default="./results/features", help="Output directory")
+    parser.add_argument("--data_dir",       type=str, default="/home/cril/mukherjee/projects/data", help="Data directory")
     parser.add_argument("--qlora",          action="store_true", help="Use QLoRA quantization")
     args = parser.parse_args()
 
@@ -393,8 +527,11 @@ Supported Model Families:
         lvm_models = []
         
         for model in args.models:
-            # Check if it's a vision model (timm models don't have '/' typically)
-            if ('/' not in model and 'vit' in model.lower()) or 'deit' in model.lower():
+            # Check if it's a vision model based on common vision model patterns
+            vision_patterns = ['resnet', 'vit', 'deit', 'convnext', 'efficientnet', 'mixer', 'swin', 'densenet', 'mobilenet', 'inception']
+            is_vision_model = any(pattern in model.lower() for pattern in vision_patterns)
+            
+            if is_vision_model:
                 lvm_models.append(model)
             else:
                 # Assume it's a language model (HuggingFace format with '/')
@@ -409,7 +546,39 @@ Supported Model Families:
         print(f"Using modelset '{args.modelset}' with modality '{args.modality}'")
     
     # load dataset once outside    
-    dataset = load_dataset(args.dataset, revision=args.subset, split='train')
+    if args.dataset in ['cifar10', 'cifar100']:
+        # Load local CIFAR datasets
+        import torchvision
+        import torchvision.transforms as transforms
+        
+        if args.dataset == 'cifar10':
+            transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010))
+            ])
+            dataset = torchvision.datasets.CIFAR10(
+                root=args.data_dir, 
+                train=True, 
+                download=False, 
+                transform=transform
+            )
+        elif args.dataset == 'cifar100':
+            transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize((0.5071, 0.4867, 0.4408), (0.2675, 0.2565, 0.2761))
+            ])
+            dataset = torchvision.datasets.CIFAR100(
+                root=args.data_dir, 
+                train=True, 
+                download=False, 
+                transform=transform
+            )
+    else:
+        # Load from HuggingFace datasets
+        if args.subset and args.subset.strip():
+            dataset = load_dataset(args.dataset, revision=args.subset, split='train')
+        else:
+            dataset = load_dataset(args.dataset, split='train')
 
     if (args.modality in ["all", "language"]) and llm_models:
         # extract all language model features
