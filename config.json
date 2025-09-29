@@ -1,0 +1,422 @@
+{
+  "model_configurations": {
+    "small": {
+      "description": "Small models for 8-16GB MacBooks, optimized for development and testing",
+      "memory_requirement_gb": 2,
+      "max_concurrent_models": 2,
+      "recommended_batch_size": 4,
+
+      "vision_language_models": [
+        {
+          "name": "nanoLLaVA-1.5",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/nanoLLaVA-1.5-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 0.8,
+          "max_batch_size": 8,
+          "feature_dim": 768,
+          "description": "Ultra-lightweight VLM, excellent for rapid prototyping"
+        },
+        {
+          "name": "SmolVLM-Instruct",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/SmolVLM-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 1.2,
+          "max_batch_size": 6,
+          "feature_dim": 1024,
+          "description": "Compact instruction-tuned VLM with strong performance"
+        },
+        {
+          "name": "Qwen2-VL-2B-Instruct",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/Qwen2-VL-2B-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 1.5,
+          "max_batch_size": 4,
+          "feature_dim": 1152,
+          "description": "High-quality 2B parameter VLM from Qwen family"
+        }
+      ],
+
+      "language_models": [
+        {
+          "name": "Phi-3-mini-4k",
+          "model_type": "language",
+          "hf_path": "mlx-community/phi-3-mini-4k-instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 0.9,
+          "max_batch_size": 8,
+          "feature_dim": 3072,
+          "description": "Microsoft's efficient 3.8B parameter model"
+        },
+        {
+          "name": "Qwen2.5-1.5B-Instruct",
+          "model_type": "language",
+          "hf_path": "mlx-community/Qwen2.5-1.5B-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 0.7,
+          "max_batch_size": 10,
+          "feature_dim": 1536,
+          "description": "Latest Qwen 1.5B model with strong multilingual support"
+        },
+        {
+          "name": "Gemma-2-2B",
+          "model_type": "language",
+          "hf_path": "mlx-community/gemma-2-2b-it-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 1.1,
+          "max_batch_size": 6,
+          "feature_dim": 2304,
+          "description": "Google's Gemma 2B with instruction tuning"
+        }
+      ],
+
+      "vision_encoders": [
+        {
+          "name": "CLIP-ViT-Base-32",
+          "model_type": "vision",
+          "hf_path": "mlx-community/clip-vit-base-patch32",
+          "quantization": "none",
+          "approx_size_gb": 0.6,
+          "max_batch_size": 16,
+          "feature_dim": 512,
+          "description": "Standard CLIP vision encoder, patch size 32"
+        },
+        {
+          "name": "CLIP-ViT-Base-16",
+          "model_type": "vision",
+          "hf_path": "mlx-community/clip-vit-base-patch16",
+          "quantization": "none",
+          "approx_size_gb": 0.9,
+          "max_batch_size": 12,
+          "feature_dim": 768,
+          "description": "Higher resolution CLIP encoder, patch size 16"
+        }
+      ]
+    },
+
+    "medium": {
+      "description": "Medium models for 16-32GB MacBooks, balance of performance and efficiency",
+      "memory_requirement_gb": 4,
+      "max_concurrent_models": 1,
+      "recommended_batch_size": 2,
+
+      "vision_language_models": [
+        {
+          "name": "LLaVA-v1.6-Mistral-7B",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/llava-v1.6-mistral-7b-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 3.2,
+          "max_batch_size": 2,
+          "feature_dim": 4096,
+          "description": "Popular 7B VLM with strong visual reasoning"
+        },
+        {
+          "name": "Llama-3.2-11B-Vision",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/Llama-3.2-11B-Vision-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 4.8,
+          "max_batch_size": 1,
+          "feature_dim": 4096,
+          "description": "Latest Meta vision model with 11B parameters"
+        },
+        {
+          "name": "Qwen2-VL-7B-Instruct",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/Qwen2-VL-7B-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 3.6,
+          "max_batch_size": 2,
+          "feature_dim": 4096,
+          "description": "Qwen's 7B vision model with multilingual capabilities"
+        }
+      ],
+
+      "language_models": [
+        {
+          "name": "Mistral-7B-Instruct-v0.3",
+          "model_type": "language",
+          "hf_path": "mlx-community/Mistral-7B-Instruct-v0.3-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 3.2,
+          "max_batch_size": 2,
+          "feature_dim": 4096,
+          "description": "Mistral's efficient 7B instruction model"
+        },
+        {
+          "name": "Llama-3.1-8B-Instruct",
+          "model_type": "language",
+          "hf_path": "mlx-community/Meta-Llama-3.1-8B-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 3.8,
+          "max_batch_size": 2,
+          "feature_dim": 4096,
+          "description": "Meta's Llama 3.1 8B with extended context"
+        },
+        {
+          "name": "CodeLlama-7B-Instruct",
+          "model_type": "language",
+          "hf_path": "mlx-community/CodeLlama-7b-Instruct-hf-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 3.2,
+          "max_batch_size": 2,
+          "feature_dim": 4096,
+          "description": "Specialized code generation model"
+        }
+      ],
+
+      "vision_encoders": [
+        {
+          "name": "CLIP-ViT-Large-14",
+          "model_type": "vision",
+          "hf_path": "mlx-community/clip-vit-large-patch14",
+          "quantization": "none",
+          "approx_size_gb": 1.4,
+          "max_batch_size": 8,
+          "feature_dim": 1024,
+          "description": "Large CLIP encoder with patch size 14"
+        },
+        {
+          "name": "OpenCLIP-ViT-B-32",
+          "model_type": "vision",
+          "hf_path": "mlx-community/openclip-vit-base-patch32",
+          "quantization": "none",
+          "approx_size_gb": 0.9,
+          "max_batch_size": 12,
+          "feature_dim": 512,
+          "description": "OpenCLIP variant with different training"
+        }
+      ]
+    },
+
+    "large": {
+      "description": "Large models for 32GB+ MacBooks, maximum performance",
+      "memory_requirement_gb": 8,
+      "max_concurrent_models": 1,
+      "recommended_batch_size": 1,
+
+      "vision_language_models": [
+        {
+          "name": "LLaVA-v1.6-34B",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/llava-v1.6-34b-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 12.8,
+          "max_batch_size": 1,
+          "feature_dim": 8192,
+          "description": "Large-scale VLM with exceptional visual reasoning"
+        },
+        {
+          "name": "Qwen2-VL-72B-Instruct",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/Qwen2-VL-72B-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 28.0,
+          "max_batch_size": 1,
+          "feature_dim": 8192,
+          "description": "State-of-the-art 72B parameter VLM"
+        },
+        {
+          "name": "InternVL2-26B",
+          "model_type": "vlm",
+          "hf_path": "mlx-community/InternVL2-26B-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 10.2,
+          "max_batch_size": 1,
+          "feature_dim": 6656,
+          "description": "Advanced multimodal model from InternLM"
+        }
+      ],
+
+      "language_models": [
+        {
+          "name": "Llama-3.1-70B-Instruct",
+          "model_type": "language",
+          "hf_path": "mlx-community/Meta-Llama-3.1-70B-Instruct-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 26.5,
+          "max_batch_size": 1,
+          "feature_dim": 8192,
+          "description": "Meta's flagship 70B parameter model"
+        },
+        {
+          "name": "Mixtral-8x7B-Instruct-v0.1",
+          "model_type": "language",
+          "hf_path": "mlx-community/Mixtral-8x7B-Instruct-v0.1-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 23.0,
+          "max_batch_size": 1,
+          "feature_dim": 4096,
+          "description": "Mixture-of-Experts model with 8x7B architecture"
+        },
+        {
+          "name": "CodeLlama-34B-Instruct",
+          "model_type": "language",
+          "hf_path": "mlx-community/CodeLlama-34b-Instruct-hf-4bit",
+          "quantization": "4bit",
+          "approx_size_gb": 12.8,
+          "max_batch_size": 1,
+          "feature_dim": 8192,
+          "description": "Large-scale code generation model"
+        }
+      ],
+
+      "vision_encoders": [
+        {
+          "name": "CLIP-ViT-Large-14-336px",
+          "model_type": "vision",
+          "hf_path": "mlx-community/clip-vit-large-patch14-336",
+          "quantization": "none",
+          "approx_size_gb": 1.8,
+          "max_batch_size": 4,
+          "feature_dim": 1024,
+          "description": "High-resolution CLIP encoder (336x336)"
+        },
+        {
+          "name": "EVA-CLIP-8B",
+          "model_type": "vision",
+          "hf_path": "mlx-community/eva-clip-8b",
+          "quantization": "8bit",
+          "approx_size_gb": 4.2,
+          "max_batch_size": 2,
+          "feature_dim": 1024,
+          "description": "Large-scale vision encoder with 8B parameters"
+        }
+      ]
+    }
+  },
+
+  "dataset_configurations": {
+    "tiny": {
+      "max_samples": 1000,
+      "approx_size_mb": 100,
+      "recommended_for": ["development", "debugging", "quick_tests"],
+      "datasets": [
+        "MNIST-Text",
+        "Flickr8k-Sample",
+        "CIFAR-10-Captions"
+      ]
+    },
+    "small": {
+      "max_samples": 10000,
+      "approx_size_mb": 1000,
+      "recommended_for": ["experiments", "validation", "medium_tests"],
+      "datasets": [
+        "MS-COCO-Captions-1K",
+        "Conceptual-Captions-3K",
+        "Flickr30k-Entities-Sample",
+        "WIT-Sample"
+      ]
+    },
+    "medium": {
+      "max_samples": 50000,
+      "approx_size_mb": 5000,
+      "recommended_for": ["comprehensive_testing", "paper_results", "benchmarking"],
+      "datasets": [
+        "MS-COCO-2017-Val",
+        "Visual-Genome-QA",
+        "LAION-5K"
+      ]
+    }
+  },
+
+  "experiment_configurations": {
+    "quick_test": {
+      "model_category": "small",
+      "dataset_category": "tiny",
+      "n_samples": 100,
+      "n_model_pairs": 4,
+      "timeout_minutes": 10,
+      "description": "Quick verification test for development"
+    },
+    "standard_experiment": {
+      "model_category": "small",
+      "dataset_category": "small",
+      "n_samples": 1000,
+      "n_model_pairs": 9,
+      "timeout_minutes": 30,
+      "description": "Standard experiment for paper results"
+    },
+    "comprehensive_benchmark": {
+      "model_category": "medium",
+      "dataset_category": "medium",
+      "n_samples": 5000,
+      "n_model_pairs": 16,
+      "timeout_minutes": 120,
+      "description": "Comprehensive benchmarking for final results"
+    },
+    "large_scale_validation": {
+      "model_category": "large",
+      "dataset_category": "medium",
+      "n_samples": 10000,
+      "n_model_pairs": 4,
+      "timeout_minutes": 300,
+      "description": "Large-scale validation with best models"
+    }
+  },
+
+  "hardware_recommendations": {
+    "8gb_macbook": {
+      "recommended_config": "small",
+      "max_model_size_gb": 2,
+      "recommended_batch_size": 4,
+      "concurrent_models": 1,
+      "notes": "Use tiny datasets, 4-bit quantization only"
+    },
+    "16gb_macbook": {
+      "recommended_config": "medium",
+      "max_model_size_gb": 4,
+      "recommended_batch_size": 2,
+      "concurrent_models": 1,
+      "notes": "Can handle small-medium models, use small datasets"
+    },
+    "32gb_macbook": {
+      "recommended_config": "large",
+      "max_model_size_gb": 12,
+      "recommended_batch_size": 1,
+      "concurrent_models": 1,
+      "notes": "Can run large models, use medium datasets"
+    },
+    "64gb_macbook": {
+      "recommended_config": "large",
+      "max_model_size_gb": 28,
+      "recommended_batch_size": 1,
+      "concurrent_models": 2,
+      "notes": "Can run largest models, all dataset sizes"
+    }
+  },
+
+  "alignment_metrics": {
+    "cross_ntk": {
+      "description": "Cross-modal Neural Tangent Kernel stability measure",
+      "range": [0.0, 1.0],
+      "interpretation": {
+        "0.0-0.25": "Phase incompatible - poor alignment expected",
+        "0.25-0.5": "Partially compatible - moderate alignment possible",
+        "0.5-1.0": "Phase compatible - good alignment expected"
+      }
+    },
+    "cosine_similarity": {
+      "description": "Average cosine similarity between paired features",
+      "range": [-1.0, 1.0],
+      "interpretation": {
+        "-1.0-0.0": "Anti-aligned features",
+        "0.0-0.3": "Poorly aligned features",
+        "0.3-0.7": "Moderately aligned features",
+        "0.7-1.0": "Well-aligned features"
+      }
+    },
+    "compression_ratio": {
+      "description": "Effective dimensionality ratio from SVD analysis",
+      "range": [0.0, 1.0],
+      "interpretation": {
+        "0.0-0.3": "Highly compressed representation",
+        "0.3-0.7": "Moderately compressed representation",
+        "0.7-1.0": "Low compression, high dimensionality"
+      }
+    }
+  }
+}

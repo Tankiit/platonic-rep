@@ -1,0 +1,33 @@
+{
+  "experiment_name": "quick_test",
+  "experiment_config": {
+    "vision_models": [
+      "squeezenet",
+      "mobilenet_v2"
+    ],
+    "language_models": [
+      "tinybert",
+      "distilbert"
+    ],
+    "datasets": [
+      "MNIST-Text",
+      "Flickr8k-Sample"
+    ],
+    "n_samples": 100,
+    "batch_size": 16,
+    "description": "Quick test for development and debugging"
+  },
+  "n_samples": 200,
+  "vision_models": [],
+  "language_models": [
+    "tinybert"
+  ],
+  "vision_layers": {},
+  "language_layers": {
+    "tinybert": []
+  },
+  "datasets_used": [
+    "MNIST-Text",
+    "Flickr8k-Sample"
+  ]
+}

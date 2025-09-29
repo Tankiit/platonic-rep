@@ -1,0 +1,143 @@
+2025-09-24 16:57:51,972 - INFO - EmbeddingExtractor initialized. Output directory: representations
+2025-09-24 16:57:51,972 - INFO - System memory: 16.0GB
+2025-09-24 16:57:51,972 - INFO - Available memory: 3.1GB
+2025-09-24 16:57:51,972 - INFO - Starting comprehensive embedding extraction
+2025-09-24 16:57:51,972 - INFO - Dataset sizes: ['small']
+2025-09-24 16:57:51,972 - INFO - Model sizes: ['small']
+2025-09-24 16:57:51,972 - INFO - Dataset types: ['vision', 'text', 'multimodal']
+2025-09-24 16:57:51,972 - INFO - Loading small datasets...
+2025-09-24 17:01:00,295 - INFO - EmbeddingExtractor initialized. Output directory: representations
+2025-09-24 17:01:00,295 - INFO - System memory: 16.0GB
+2025-09-24 17:01:00,295 - INFO - Available memory: 2.8GB
+2025-09-24 17:01:00,295 - INFO - Starting comprehensive embedding extraction
+2025-09-24 17:01:00,295 - INFO - Dataset sizes: ['small']
+2025-09-24 17:01:00,295 - INFO - Model sizes: ['small']
+2025-09-24 17:01:00,295 - INFO - Dataset types: ['vision', 'text', 'multimodal']
+2025-09-24 17:01:00,295 - INFO - Loading small datasets...
+2025-09-24 17:02:32,304 - INFO - Loaded 5 small datasets
+2025-09-24 17:02:32,305 - INFO - Processing dataset: CIFAR-10
+2025-09-24 17:02:32,305 - INFO - Processing dataset: Fashion-MNIST
+2025-09-24 17:02:32,305 - INFO - Processing dataset: IMDB
+2025-09-24 17:02:32,305 - INFO - Processing dataset: AG-News
+2025-09-24 17:02:32,305 - INFO - Processing dataset: Yelp-Polarity
+2025-09-24 17:02:32,306 - INFO - ============================================================
+2025-09-24 17:02:32,306 - INFO - EXTRACTION SUMMARY
+2025-09-24 17:02:32,306 - INFO - ============================================================
+2025-09-24 17:02:32,306 - INFO - Total processed: 0
+2025-09-24 17:02:32,306 - INFO - Successful: 0
+2025-09-24 17:02:32,306 - INFO - Failed: 0
+2025-09-24 17:02:32,306 - INFO - Total time: 92.0s
+2025-09-24 17:02:32,306 - INFO - Results saved to: representations/extraction_results.json
+2025-09-24 17:02:32,340 - INFO - Loaded 5 small datasets
+2025-09-24 17:02:32,341 - INFO - Processing dataset: CIFAR-10
+2025-09-24 17:02:32,341 - INFO - Processing dataset: Fashion-MNIST
+2025-09-24 17:02:32,341 - INFO - Processing dataset: IMDB
+2025-09-24 17:02:32,341 - INFO - Processing dataset: AG-News
+2025-09-24 17:02:32,341 - INFO - Processing dataset: Yelp-Polarity
+2025-09-24 17:02:32,341 - INFO - ============================================================
+2025-09-24 17:02:32,342 - INFO - EXTRACTION SUMMARY
+2025-09-24 17:02:32,342 - INFO - ============================================================
+2025-09-24 17:02:32,342 - INFO - Total processed: 0
+2025-09-24 17:02:32,342 - INFO - Successful: 0
+2025-09-24 17:02:32,342 - INFO - Failed: 0
+2025-09-24 17:02:32,342 - INFO - Total time: 280.4s
+2025-09-24 17:02:32,342 - INFO - Results saved to: representations/extraction_results.json
+2025-09-24 17:07:15,141 - INFO - EmbeddingExtractor initialized. Output directory: representations
+2025-09-24 17:07:15,142 - INFO - System memory: 16.0GB
+2025-09-24 17:07:15,142 - INFO - Available memory: 3.0GB
+2025-09-24 17:07:15,142 - INFO - Starting comprehensive embedding extraction
+2025-09-24 17:07:15,142 - INFO - Dataset sizes: ['small']
+2025-09-24 17:07:15,142 - INFO - Model sizes: ['small']
+2025-09-24 17:07:15,142 - INFO - Dataset types: ['vision', 'text', 'multimodal']
+2025-09-24 17:07:15,142 - INFO - Loading small datasets...
+2025-09-24 17:07:41,197 - INFO - Loaded 5 small datasets
+2025-09-24 17:07:41,198 - INFO - Processing dataset: CIFAR-10
+2025-09-24 17:07:41,198 - INFO - Processing CIFAR-10 with clip-vit-base
+2025-09-24 17:07:41,198 - ERROR - Failed to load model clip-vit-base
+2025-09-24 17:07:41,198 - INFO - Processing CIFAR-10 with clip-vit-large
+2025-09-24 17:07:41,198 - ERROR - Failed to load model clip-vit-large
+2025-09-24 17:07:41,199 - INFO - Processing dataset: Fashion-MNIST
+2025-09-24 17:07:41,199 - INFO - Processing Fashion-MNIST with clip-vit-base
+2025-09-24 17:07:41,199 - ERROR - Failed to load model clip-vit-base
+2025-09-24 17:07:41,199 - INFO - Processing Fashion-MNIST with clip-vit-large
+2025-09-24 17:07:41,199 - ERROR - Failed to load model clip-vit-large
+2025-09-24 17:07:41,199 - INFO - Processing dataset: IMDB
+2025-09-24 17:07:41,199 - INFO - Processing IMDB with Phi-3-mini
+2025-09-24 17:10:27,416 - INFO - EmbeddingExtractor initialized. Output directory: representations
+2025-09-24 17:10:27,417 - INFO - System memory: 16.0GB
+2025-09-24 17:10:27,417 - INFO - Available memory: 4.0GB
+2025-09-24 17:10:27,417 - INFO - Starting comprehensive embedding extraction
+2025-09-24 17:10:27,417 - INFO - Dataset sizes: ['small']
+2025-09-24 17:10:27,417 - INFO - Model sizes: ['small']
+2025-09-24 17:10:27,417 - INFO - Dataset types: ['vision', 'text', 'multimodal']
+2025-09-24 17:10:27,417 - INFO - Loading small datasets...
+2025-09-24 17:10:44,628 - INFO - Loaded 5 small datasets
+2025-09-24 17:10:44,628 - INFO - Processing dataset: CIFAR-10
+2025-09-24 17:10:44,629 - INFO - Processing CIFAR-10 with clip-vit-base
+2025-09-24 17:10:44,629 - ERROR - Failed to load model clip-vit-base
+2025-09-24 17:10:44,629 - INFO - Processing CIFAR-10 with clip-vit-large
+2025-09-24 17:10:44,629 - ERROR - Failed to load model clip-vit-large
+2025-09-24 17:10:44,629 - INFO - Processing dataset: Fashion-MNIST
+2025-09-24 17:10:44,629 - INFO - Processing Fashion-MNIST with clip-vit-base
+2025-09-24 17:10:44,629 - ERROR - Failed to load model clip-vit-base
+2025-09-24 17:10:44,629 - INFO - Processing Fashion-MNIST with clip-vit-large
+2025-09-24 17:10:44,629 - ERROR - Failed to load model clip-vit-large
+2025-09-24 17:10:44,629 - INFO - Processing dataset: IMDB
+2025-09-24 17:10:44,629 - INFO - Processing IMDB with Phi-3-mini
+2025-09-24 17:40:39,606 - INFO - EmbeddingExtractor initialized. Output directory: representations
+2025-09-24 17:40:39,606 - INFO - System memory: 16.0GB
+2025-09-24 17:40:39,606 - INFO - Available memory: 3.9GB
+2025-09-24 17:40:39,606 - INFO - Starting comprehensive embedding extraction
+2025-09-24 17:40:39,606 - INFO - Dataset sizes: ['small']
+2025-09-24 17:40:39,606 - INFO - Model sizes: ['small']
+2025-09-24 17:40:39,606 - INFO - Dataset types: ['vision', 'text', 'multimodal']
+2025-09-24 17:40:39,606 - INFO - Loading small datasets...
+2025-09-24 17:40:57,292 - INFO - Loaded 5 small datasets
+2025-09-24 17:40:57,292 - INFO - Processing dataset: CIFAR-10
+2025-09-24 17:40:57,293 - INFO - Processing CIFAR-10 with clip-vit-base
+2025-09-24 17:40:58,746 - ERROR - No safetensors found in /Users/tanmoy/.cache/huggingface/hub/models--mlx-community--clip-vit-base-patch16/snapshots/62d2699753ef6c5172ab9dcdd2c588cf8fad3151
+2025-09-24 17:40:58,746 - ERROR - Failed to load model clip-vit-base
+2025-09-24 17:40:58,746 - INFO - Processing CIFAR-10 with clip-vit-large
+2025-09-24 17:40:59,798 - ERROR - No safetensors found in /Users/tanmoy/.cache/huggingface/hub/models--mlx-community--clip-vit-large-patch14/snapshots/2c525a82439bd6818a4f3ce6ee68f2b9b2e9f0ba
+2025-09-24 17:40:59,799 - ERROR - Failed to load model clip-vit-large
+2025-09-24 17:40:59,799 - INFO - Processing dataset: Fashion-MNIST
+2025-09-24 17:40:59,799 - INFO - Processing Fashion-MNIST with clip-vit-base
+2025-09-24 17:41:00,156 - ERROR - No safetensors found in /Users/tanmoy/.cache/huggingface/hub/models--mlx-community--clip-vit-base-patch16/snapshots/62d2699753ef6c5172ab9dcdd2c588cf8fad3151
+2025-09-24 17:41:00,156 - ERROR - Failed to load model clip-vit-base
+2025-09-24 17:41:00,156 - INFO - Processing Fashion-MNIST with clip-vit-large
+2025-09-24 17:41:00,294 - ERROR - No safetensors found in /Users/tanmoy/.cache/huggingface/hub/models--mlx-community--clip-vit-large-patch14/snapshots/2c525a82439bd6818a4f3ce6ee68f2b9b2e9f0ba
+2025-09-24 17:41:00,294 - ERROR - Failed to load model clip-vit-large
+2025-09-24 17:41:00,294 - INFO - Processing dataset: IMDB
+2025-09-24 17:41:00,294 - INFO - Processing IMDB with Phi-3-mini
+2025-09-24 18:04:37,279 - INFO - EmbeddingExtractor initialized. Output directory: representations
+2025-09-24 18:04:37,279 - INFO - System memory: 16.0GB
+2025-09-24 18:04:37,279 - INFO - Available memory: 4.0GB
+2025-09-24 18:04:37,279 - INFO - Starting comprehensive embedding extraction
+2025-09-24 18:04:37,280 - INFO - Dataset sizes: ['small']
+2025-09-24 18:04:37,280 - INFO - Model sizes: ['small']
+2025-09-24 18:04:37,280 - INFO - Dataset types: ['vision', 'text', 'multimodal']
+2025-09-24 18:04:37,280 - INFO - Loading small datasets...
+2025-09-24 18:04:57,719 - INFO - Loaded 5 small datasets
+2025-09-24 18:04:57,719 - INFO - Processing dataset: CIFAR-10
+2025-09-24 18:04:57,719 - INFO - Processing CIFAR-10 with AIMv2-2B-vision
+2025-09-24 18:04:57,847 - ERROR - Failed to load model AIMv2-2B-vision
+2025-09-24 18:04:57,847 - INFO - Processing CIFAR-10 with AIMv2-1B-vision
+2025-09-24 18:04:57,969 - ERROR - Failed to load model AIMv2-1B-vision
+2025-09-24 18:04:57,969 - INFO - Processing dataset: Fashion-MNIST
+2025-09-24 18:04:57,969 - INFO - Processing Fashion-MNIST with AIMv2-2B-vision
+2025-09-24 18:04:58,134 - ERROR - Failed to load model AIMv2-2B-vision
+2025-09-24 18:04:58,134 - INFO - Processing Fashion-MNIST with AIMv2-1B-vision
+2025-09-24 18:04:58,382 - ERROR - Failed to load model AIMv2-1B-vision
+2025-09-24 18:04:58,382 - INFO - Processing dataset: IMDB
+2025-09-24 18:04:58,382 - INFO - Processing IMDB with Phi-3-mini
+2025-09-24 18:14:00,270 - INFO - EmbeddingExtractor initialized. Output directory: representations
+2025-09-24 18:14:00,270 - INFO - System memory: 16.0GB
+2025-09-24 18:14:00,271 - INFO - Available memory: 3.9GB
+2025-09-24 18:14:00,271 - INFO - Starting comprehensive embedding extraction
+2025-09-24 18:14:00,271 - INFO - Dataset sizes: ['small']
+2025-09-24 18:14:00,271 - INFO - Model sizes: ['small']
+2025-09-24 18:14:00,271 - INFO - Dataset types: ['vision', 'text', 'multimodal']
+2025-09-24 18:14:00,271 - INFO - Loading small datasets...
+2025-09-24 18:15:03,354 - INFO - Loaded 5 small datasets
+2025-09-24 18:15:03,355 - INFO - Processing dataset: CIFAR-10
+2025-09-24 18:15:03,355 - INFO - Processing CIFAR-10 with AIMv2-1B-vision

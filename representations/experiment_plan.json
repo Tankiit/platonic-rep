@@ -1,0 +1,1615 @@
+{
+  "experiment_metadata": {
+    "total_datasets": 20,
+    "total_model_dataset_combinations": 80,
+    "estimated_total_memory_gb": 100,
+    "estimated_total_compute_hours": 40.0
+  },
+  "experiments": [
+    {
+      "dataset_name": "openwebtext",
+      "dataset_config": {
+        "name": "openwebtext",
+        "subset": "",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 8013769,
+        "caption_idx": 0,
+        "description": "OpenWebText: Large-scale web text corpus for language modeling",
+        "supported_tasks": [
+          "language_modeling",
+          "representation_learning",
+          "text_generation"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "wikitext103",
+      "dataset_config": {
+        "name": "wikitext",
+        "subset": "wikitext-103-v1",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 1801350,
+        "caption_idx": 0,
+        "description": "WikiText-103: Long-range dependency modeling from Wikipedia articles",
+        "supported_tasks": [
+          "language_modeling",
+          "long_range_dependencies"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "bookcorpus",
+      "dataset_config": {
+        "name": "bookcorpus",
+        "subset": "",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 74004228,
+        "caption_idx": 0,
+        "description": "BookCorpus: Collection of over 11,000 books for language modeling",
+        "supported_tasks": [
+          "language_modeling",
+          "long_form_text",
+          "narrative_understanding"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "c4",
+      "dataset_config": {
+        "name": "c4",
+        "subset": "en",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 364868892,
+        "caption_idx": 0,
+        "description": "C4: Cleaned Common Crawl corpus for T5 pretraining",
+        "supported_tasks": [
+          "language_modeling",
+          "large_scale_pretraining"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "pile",
+      "dataset_config": {
+        "name": "EleutherAI/pile",
+        "subset": "",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 210607728,
+        "caption_idx": 0,
+        "description": "The Pile: Diverse text dataset for language modeling",
+        "supported_tasks": [
+          "language_modeling",
+          "diverse_domains",
+          "knowledge_representation"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "imdb",
+      "dataset_config": {
+        "name": "imdb",
+        "subset": "",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 50000,
+        "caption_idx": 0,
+        "description": "IMDB Movie Reviews: Binary sentiment classification",
+        "supported_tasks": [
+          "sentiment_analysis",
+          "text_classification"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "amazon_reviews",
+      "dataset_config": {
+        "name": "amazon_reviews_multi",
+        "subset": "en",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 200000,
+        "caption_idx": 0,
+        "description": "Amazon Reviews: Multilingual product review sentiment",
+        "supported_tasks": [
+          "sentiment_analysis",
+          "multilingual_processing"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "ag_news",
+      "dataset_config": {
+        "name": "ag_news",
+        "subset": "",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 120000,
+        "caption_idx": 0,
+        "description": "AG News: News article topic classification",
+        "supported_tasks": [
+          "text_classification",
+          "news_categorization"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "squad",
+      "dataset_config": {
+        "name": "squad",
+        "subset": "",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 87599,
+        "caption_idx": 0,
+        "description": "SQuAD: Stanford Question Answering Dataset",
+        "supported_tasks": [
+          "question_answering",
+          "reading_comprehension"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.6
+      }
+    },
+    {
+      "dataset_name": "imagenet1k",
+      "dataset_config": {
+        "name": "imagenet-1k",
+        "subset": "validation",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 50000,
+        "caption_idx": 0,
+        "description": "ImageNet-1K validation: 1000-class large-scale image classification",
+        "supported_tasks": [
+          "large_scale_classification",
+          "transfer_learning",
+          "representation_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 4.4
+      }
+    },
+    {
+      "dataset_name": "cifar10",
+      "dataset_config": {
+        "name": "cifar10",
+        "subset": "",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 10000,
+        "caption_idx": 0,
+        "description": "CIFAR-10: 10-class natural image classification dataset",
+        "supported_tasks": [
+          "classification",
+          "representation_learning",
+          "transfer_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 3.9
+      }
+    },
+    {
+      "dataset_name": "cifar100",
+      "dataset_config": {
+        "name": "cifar100",
+        "subset": "",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 10000,
+        "caption_idx": 0,
+        "description": "CIFAR-100: 100-class fine-grained image classification",
+        "supported_tasks": [
+          "fine_grained_classification",
+          "representation_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 3.9
+      }
+    },
+    {
+      "dataset_name": "glue_sst2",
+      "dataset_config": {
+        "name": "glue",
+        "subset": "sst2",
+        "dataset_type": "DatasetType.LANGUAGE",
+        "num_samples": 67349,
+        "caption_idx": 0,
+        "description": "Stanford Sentiment Treebank: Fine-grained sentiment analysis",
+        "supported_tasks": [
+          "sentiment_analysis",
+          "fine_grained_classification"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "EleutherAI/pythia-70m",
+          "model_type": "llm",
+          "estimated_size_mb": 70,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-160m",
+          "model_type": "llm",
+          "estimated_size_mb": 160,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 2,
+          "memory_requirements_gb": 2,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "bigscience/bloomz-560m",
+          "model_type": "llm",
+          "estimated_size_mb": 560,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 4,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "EleutherAI/pythia-410m",
+          "model_type": "llm",
+          "estimated_size_mb": 410,
+          "supported_tasks": [
+            "language_modeling",
+            "text_generation",
+            "representation_learning"
+          ],
+          "optimal_batch_size": 3,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 4,
+        "estimated_runtime_hours": 2.0,
+        "priority": 3.5999999999999996
+      }
+    },
+    {
+      "dataset_name": "food101",
+      "dataset_config": {
+        "name": "food101",
+        "subset": "",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 25250,
+        "caption_idx": 0,
+        "description": "Food-101: Food image classification with 101 categories",
+        "supported_tasks": [
+          "domain_specific_classification",
+          "transfer_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 3.4
+      }
+    },
+    {
+      "dataset_name": "svhn",
+      "dataset_config": {
+        "name": "svhn",
+        "subset": "test",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 26032,
+        "caption_idx": 0,
+        "description": "SVHN: Street View House Numbers digit recognition",
+        "supported_tasks": [
+          "digit_recognition",
+          "domain_adaptation"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 3.4
+      }
+    },
+    {
+      "dataset_name": "oxford_flowers102",
+      "dataset_config": {
+        "name": "nelorth/oxford-flowers",
+        "subset": "",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 8189,
+        "caption_idx": 0,
+        "description": "Oxford Flowers-102: Fine-grained flower classification",
+        "supported_tasks": [
+          "fine_grained_classification",
+          "few_shot_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 2.9
+      }
+    },
+    {
+      "dataset_name": "oxford_pets",
+      "dataset_config": {
+        "name": "oxford-iiit-pet",
+        "subset": "test",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 3669,
+        "caption_idx": 0,
+        "description": "Oxford-IIIT Pet Dataset: 37 pet breed classification",
+        "supported_tasks": [
+          "fine_grained_classification",
+          "few_shot_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 2.9
+      }
+    },
+    {
+      "dataset_name": "stl10",
+      "dataset_config": {
+        "name": "stl10",
+        "subset": "test",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 8000,
+        "caption_idx": 0,
+        "description": "STL-10: 10-class image classification with unlabeled data",
+        "supported_tasks": [
+          "semi_supervised_learning",
+          "representation_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 2.9
+      }
+    },
+    {
+      "dataset_name": "caltech101",
+      "dataset_config": {
+        "name": "caltech101",
+        "subset": "",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 3060,
+        "caption_idx": 0,
+        "description": "Caltech-101: 101 object categories for object recognition",
+        "supported_tasks": [
+          "object_recognition",
+          "few_shot_learning"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 2.9
+      }
+    },
+    {
+      "dataset_name": "eurosat",
+      "dataset_config": {
+        "name": "timm/eurosat-rgb",
+        "subset": "",
+        "dataset_type": "DatasetType.VISION",
+        "num_samples": 5400,
+        "caption_idx": 0,
+        "description": "EuroSAT: Satellite image classification of land use/land cover",
+        "supported_tasks": [
+          "satellite_imagery",
+          "domain_specific_classification"
+        ],
+        "preprocessing_args": {}
+      },
+      "models": [
+        {
+          "model_name": "vit_tiny_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "deit_tiny_patch16_224.fb_in1k",
+          "model_type": "lvm",
+          "estimated_size_mb": 5,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 32,
+          "memory_requirements_gb": 4,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch16_224.augreg_in21k",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        },
+        {
+          "model_name": "vit_small_patch14_dinov2.lvd142m",
+          "model_type": "lvm",
+          "estimated_size_mb": 22,
+          "supported_tasks": [
+            "image_classification",
+            "representation_learning",
+            "transfer_learning"
+          ],
+          "optimal_batch_size": 16,
+          "memory_requirements_gb": 6,
+          "requires_special_handling": false,
+          "notes": ""
+        }
+      ],
+      "experiment_metadata": {
+        "num_models": 4,
+        "estimated_memory_gb": 6,
+        "estimated_runtime_hours": 2.0,
+        "priority": 2.9
+      }
+    }
+  ]
+}

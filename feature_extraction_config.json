@@ -1,0 +1,280 @@
+{
+  "description": "Configuration for extracting features using torchvision vision models and transformers language models",
+
+  "vision_models": {
+    "mobilenet_v2": {
+      "name": "MobileNet V2",
+      "model_type": "vision",
+      "framework": "torchvision",
+      "model_class": "torchvision.models.mobilenet_v2",
+      "pretrained": true,
+      "feature_layer": "features",
+      "feature_dim": 1280,
+      "input_size": [224, 224],
+      "approx_size_mb": 14,
+      "description": "Efficient CNN architecture optimized for mobile devices"
+    },
+    "squeezenet": {
+      "name": "SqueezeNet 1.1",
+      "model_type": "vision",
+      "framework": "torchvision",
+      "model_class": "torchvision.models.squeezenet1_1",
+      "pretrained": true,
+      "feature_layer": "features",
+      "feature_dim": 512,
+      "input_size": [224, 224],
+      "approx_size_mb": 5,
+      "description": "Lightweight CNN with Fire modules for reduced parameters"
+    },
+    "efficientnet_b0": {
+      "name": "EfficientNet B0",
+      "model_type": "vision",
+      "framework": "torchvision",
+      "model_class": "torchvision.models.efficientnet_b0",
+      "pretrained": true,
+      "feature_layer": "features",
+      "feature_dim": 1280,
+      "input_size": [224, 224],
+      "approx_size_mb": 21,
+      "description": "Efficient CNN balancing network depth, width, and resolution"
+    },
+    "resnet18": {
+      "name": "ResNet-18",
+      "model_type": "vision",
+      "framework": "torchvision",
+      "model_class": "torchvision.models.resnet18",
+      "pretrained": true,
+      "feature_layer": "avgpool",
+      "feature_dim": 512,
+      "input_size": [224, 224],
+      "approx_size_mb": 45,
+      "description": "18-layer residual network with skip connections"
+    }
+  },
+
+  "language_models": {
+    "distilbert": {
+      "name": "DistilBERT Base Uncased",
+      "model_type": "language",
+      "framework": "transformers",
+      "hf_path": "distilbert-base-uncased",
+      "model_class": "AutoModel",
+      "feature_layer": "last_hidden_state",
+      "feature_dim": 768,
+      "max_length": 512,
+      "approx_size_mb": 255,
+      "description": "Distilled version of BERT, 40% smaller and 60% faster"
+    },
+    "tinybert": {
+      "name": "TinyBERT General 4L 312D",
+      "model_type": "language",
+      "framework": "transformers",
+      "hf_path": "huawei-noah/TinyBERT_General_4L_312D",
+      "model_class": "AutoModel",
+      "feature_layer": "last_hidden_state",
+      "feature_dim": 312,
+      "max_length": 512,
+      "approx_size_mb": 57,
+      "description": "Ultra-compact BERT variant with 4 layers and 312 hidden units"
+    },
+    "albert": {
+      "name": "ALBERT Base V2",
+      "model_type": "language",
+      "framework": "transformers",
+      "hf_path": "albert-base-v2",
+      "model_class": "AutoModel",
+      "feature_layer": "last_hidden_state",
+      "feature_dim": 768,
+      "max_length": 512,
+      "approx_size_mb": 45,
+      "description": "A Lite BERT with parameter sharing and factorized embeddings"
+    },
+    "mobilebert": {
+      "name": "MobileBERT Uncased",
+      "model_type": "language",
+      "framework": "transformers",
+      "hf_path": "google/mobilebert-uncased",
+      "model_class": "AutoModel",
+      "feature_layer": "last_hidden_state",
+      "feature_dim": 512,
+      "max_length": 512,
+      "approx_size_mb": 97,
+      "description": "Task-agnostic compact BERT optimized for mobile deployment"
+    }
+  },
+
+  "datasets": {
+    "tiny": {
+      "max_samples": 1000,
+      "approx_size_mb": 100,
+      "recommended_for": ["development", "debugging", "quick_tests"],
+      "datasets": [
+        {
+          "name": "MNIST-Text",
+          "dataset_id": "brendanartley/mnist-text",
+          "subset": null,
+          "split": "train[:100]",
+          "size_category": "tiny",
+          "approx_size_mb": 10,
+          "n_samples": 100,
+          "description": "Handwritten digits with text descriptions"
+        },
+        {
+          "name": "Flickr8k-Sample",
+          "dataset_id": "nlphuji/flickr8k",
+          "subset": null,
+          "split": "train[:100]",
+          "size_category": "tiny",
+          "approx_size_mb": 50,
+          "n_samples": 100,
+          "description": "100 images with 5 captions each"
+        },
+        {
+          "name": "CIFAR-10-Captions",
+          "dataset_id": "keremberke/cifar10-classification",
+          "subset": null,
+          "split": "train[:500]",
+          "size_category": "tiny",
+          "approx_size_mb": 30,
+          "n_samples": 500,
+          "description": "CIFAR images with generated captions"
+        }
+      ]
+    },
+    "small": {
+      "max_samples": 10000,
+      "approx_size_mb": 1000,
+      "recommended_for": ["experiments", "validation", "medium_tests"],
+      "datasets": [
+        {
+          "name": "MS-COCO-Captions-1K",
+          "dataset_id": "HuggingFaceM4/COCO",
+          "subset": "2017_captions",
+          "split": "train[:1000]",
+          "size_category": "small",
+          "approx_size_mb": 200,
+          "n_samples": 1000,
+          "description": "High-quality images with multiple captions"
+        },
+        {
+          "name": "Conceptual-Captions-3K",
+          "dataset_id": "conceptual_captions",
+          "subset": "unlabeled",
+          "split": "train[:3000]",
+          "size_category": "small",
+          "approx_size_mb": 500,
+          "n_samples": 3000,
+          "description": "Web images with alt-text captions"
+        },
+        {
+          "name": "Flickr30k-Entities-Sample",
+          "dataset_id": "nlphuji/flickr30k",
+          "subset": null,
+          "split": "train[:2000]",
+          "size_category": "small",
+          "approx_size_mb": 400,
+          "n_samples": 2000,
+          "description": "Images with detailed entity annotations"
+        }
+      ]
+    },
+    "medium": {
+      "max_samples": 50000,
+      "approx_size_mb": 5000,
+      "recommended_for": ["comprehensive_testing", "paper_results", "benchmarking"],
+      "datasets": [
+        {
+          "name": "MS-COCO-2017-Val",
+          "dataset_id": "HuggingFaceM4/COCO",
+          "subset": "2017_captions",
+          "split": "validation",
+          "size_category": "medium",
+          "approx_size_mb": 800,
+          "n_samples": 5000,
+          "description": "COCO validation set with 5 captions per image"
+        },
+        {
+          "name": "Visual-Genome-QA",
+          "dataset_id": "visual_genome",
+          "subset": "question_answers_v1.2",
+          "split": "train[:10000]",
+          "size_category": "medium",
+          "approx_size_mb": 2000,
+          "n_samples": 10000,
+          "description": "Complex scene graphs and QA pairs"
+        },
+        {
+          "name": "LAION-5K",
+          "dataset_id": "laion/laion400m",
+          "subset": null,
+          "split": "train[:5000]",
+          "size_category": "medium",
+          "approx_size_mb": 1500,
+          "n_samples": 5000,
+          "description": "Large-scale web crawl image-text pairs"
+        }
+      ]
+    }
+  },
+
+  "feature_extraction_config": {
+    "batch_size": 32,
+    "num_workers": 4,
+    "device": "auto",
+    "output_format": "numpy",
+    "normalize_features": true,
+    "save_intermediate": true,
+    "pooling_strategy": {
+      "vision": "global_avg_pool",
+      "language": "mean_pool"
+    }
+  },
+
+  "hardware_recommendations": {
+    "8gb_system": {
+      "recommended_models": ["squeezenet", "tinybert"],
+      "max_batch_size": 16,
+      "dataset_size": "tiny",
+      "notes": "Use smallest models and tiny datasets"
+    },
+    "16gb_system": {
+      "recommended_models": ["mobilenet_v2", "resnet18", "distilbert", "albert"],
+      "max_batch_size": 32,
+      "dataset_size": "small",
+      "notes": "Can handle most models with small-medium datasets"
+    },
+    "32gb_system": {
+      "recommended_models": ["efficientnet_b0", "mobilebert"],
+      "max_batch_size": 64,
+      "dataset_size": "medium",
+      "notes": "Can run all models with medium datasets"
+    }
+  },
+
+  "experiment_configurations": {
+    "quick_test": {
+      "vision_models": ["squeezenet", "mobilenet_v2"],
+      "language_models": ["tinybert", "distilbert"],
+      "datasets": ["MNIST-Text", "Flickr8k-Sample"],
+      "n_samples": 100,
+      "batch_size": 16,
+      "description": "Quick test for development and debugging"
+    },
+    "comprehensive": {
+      "vision_models": ["mobilenet_v2", "squeezenet", "efficientnet_b0", "resnet18"],
+      "language_models": ["distilbert", "tinybert", "albert", "mobilebert"],
+      "datasets": ["MS-COCO-Captions-1K", "Conceptual-Captions-3K"],
+      "n_samples": 1000,
+      "batch_size": 32,
+      "description": "Comprehensive feature extraction across all models"
+    },
+    "full_scale": {
+      "vision_models": ["mobilenet_v2", "squeezenet", "efficientnet_b0", "resnet18"],
+      "language_models": ["distilbert", "tinybert", "albert", "mobilebert"],
+      "datasets": ["MS-COCO-2017-Val", "Visual-Genome-QA"],
+      "n_samples": 5000,
+      "batch_size": 64,
+      "description": "Full-scale evaluation with medium datasets"
+    }
+  }
+}
