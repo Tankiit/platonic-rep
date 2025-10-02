@@ -1,9 +1,165 @@
 # phase_analyzer.py
-import numpy as np
 import torch
+import torch.nn as nn
+import numpy as np
 from typing import Dict, List, Tuple
 from pathlib import Path
+from tqdm import tqdm
+from scipy.optimize import curve_fit
 import platonic  # The existing PRH module
+
+class RealAGOPAnalyzer:
+    """
+    Computes real AGOP by collecting gradients during model forward passes
+    """
+    
+    def __init__(self, device='cuda' if torch.cuda.is_available() else 'cpu'):
+        self.device = device
+        
+    def compute_real_agop(self, model, dataloader, loss_fn, batch_size=32):
+        """
+        Compute real AGOP by accumulating gradient outer products
+        
+        Args:
+            model: PyTorch model
+            dataloader: DataLoader with (inputs, labels)
+            loss_fn: Loss function
+            batch_size: Batch size for efficiency
+        
+        Returns:
+            Dict with AGOP analysis
+        """
+        model.eval()  # Important: eval mode for consistent gradients
+        model.to(self.device)
+        
+        # Initialize AGOP accumulator
+        agop_accumulator = None
+        total_samples = 0
+        
+        print("Computing real AGOP from gradients...")
+        
+        with tqdm(dataloader, desc="Processing batches") as pbar:
+            for batch_idx, (inputs, targets) in enumerate(pbar):
+                if batch_idx * batch_size >= 1000:  # Limit to 1000 samples for efficiency
+                    break
+                    
+                inputs = inputs.to(self.device)
+                targets = targets.to(self.device)
+                
+                # Zero gradients
+                model.zero_grad()
+                
+                # Forward pass
+                outputs = model(inputs)
+                loss = loss_fn(outputs, targets)
+                
+                # Backward pass to compute gradients
+                loss.backward()
+                
+                # Collect and flatten gradients
+                gradients = []
+                for param in model.parameters():
+                    if param.grad is not None:
+                        gradients.append(param.grad.detach().cpu().numpy().flatten())
+                
+                if gradients:
+                    # Concatenate all gradients
+                    grad_vector = np.concatenate(gradients)
+                    
+                    # Compute outer product for this batch
+                    # For memory efficiency, we can subsample gradient dimensions
+                    if len(grad_vector) > 10000:
+                        # Random subsample for large models
+                        indices = np.random.choice(len(grad_vector), 10000, replace=False)
+                        grad_vector = grad_vector[indices]
+                    
+                    batch_agop = np.outer(grad_vector, grad_vector)
+                    
+                    # Accumulate
+                    if agop_accumulator is None:
+                        agop_accumulator = batch_agop
+                    else:
+                        agop_accumulator += batch_agop
+                    
+                    total_samples += len(inputs)
+                    
+                    # Update progress
+                    pbar.set_postfix({'samples': total_samples, 
+                                     'grad_dim': len(grad_vector)})
+                
+                # Clear gradients to save memory
+                model.zero_grad()
+                torch.cuda.empty_cache()
+        
+        # Normalize by number of samples
+        agop = agop_accumulator / total_samples
+        
+        # Analyze AGOP
+        return self._analyze_agop(agop)
+    
+    def _analyze_agop(self, agop):
+        """Analyze AGOP matrix"""
+        # Compute eigenvalues
+        eigenvalues = np.linalg.eigvalsh(agop)
+        eigenvalues = np.sort(eigenvalues)[::-1]
+        eigenvalues = eigenvalues[eigenvalues > 1e-10]
+        
+        # Key metrics
+        results = {
+            'eigenvalues': eigenvalues[:100],  # Top 100
+            'agop_ratio': eigenvalues[0] / (eigenvalues[-1] + 1e-10),
+            'effective_rank': np.sum(eigenvalues)**2 / np.sum(eigenvalues**2),
+            'top10_concentration': np.sum(eigenvalues[:10]) / np.sum(eigenvalues),
+            'spectral_decay': self._fit_spectral_decay(eigenvalues),
+            'phase': self._determine_phase(eigenvalues)
+        }
+        
+        return results
+    
+    def _fit_spectral_decay(self, eigenvalues):
+        """Fit power law to eigenvalues"""
+        def power_law(x, a, b):
+            return a * x**(-b)
+        
+        k = np.arange(1, min(len(eigenvalues), 50) + 1)
+        try:
+            popt, _ = curve_fit(power_law, k, eigenvalues[:len(k)])
+            return {'type': 'power_law', 'exponent': popt[1]}
+        except:
+            return {'type': 'unknown', 'exponent': None}
+    
+    def _determine_phase(self, eigenvalues):
+        """Determine phase from eigenvalue spectrum"""
+        top10_conc = np.sum(eigenvalues[:10]) / np.sum(eigenvalues)
+        
+        if top10_conc > 0.9:
+            return "lazy"
+        elif top10_conc > 0.7:
+            return "critical" 
+        else:
+            return "chaotic"
+
+def create_data_loader(embeddings, labels=None, batch_size=32):
+    """
+    Create a DataLoader from numpy embeddings
+    """
+    import torch.utils.data as data
+    
+    # Create synthetic labels if not provided
+    if labels is None:
+        labels = np.random.randint(0, 10, size=len(embeddings))
+    
+    # Convert to tensors
+    embeddings_tensor = torch.FloatTensor(embeddings)
+    labels_tensor = torch.LongTensor(labels)
+    
+    # Create dataset
+    dataset = data.TensorDataset(embeddings_tensor, labels_tensor)
+    
+    # Create dataloader
+    dataloader = data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
+    
+    return dataloader
 
 class PhaseAnalyzer:
     """
@@ -19,39 +175,37 @@ class PhaseAnalyzer:
 
     def compute_agop_from_features(self, features: np.ndarray, n_samples: int = 1000) -> Dict:
         """
-        Compute AGOP metrics from extracted features without training.
-        We use a probe task approach - creating synthetic gradients.
+        Compute AGOP metrics from extracted features using real gradient computation.
         """
-        # Features shape: (n_samples, n_features)
+        # Features shape: (n_samples, n_features)  
         n_features = features.shape[-1]
 
-        # Create a simple probe task - random classification
-        # This simulates gradient computation without actual training
-        n_classes = 100
-        probe_weights = np.random.randn(n_features, n_classes) * 0.01
-
-        # Compute gradients for each sample
-        gradients = []
-        for i in range(min(n_samples, len(features))):
-            # Synthetic gradient based on feature-weight interaction
-            grad = features[i:i+1].T @ np.random.randn(1, n_classes)
-            gradients.append(grad.flatten())
-
-        # Compute gradient outer products
-        gradient_matrix = np.stack(gradients)
-        agop = gradient_matrix.T @ gradient_matrix / len(gradients)
-
-        # Eigenvalue analysis
-        eigenvalues = np.linalg.eigvalsh(agop)
-        eigenvalues = np.sort(eigenvalues)[::-1]  # Sort descending
-
-        # Compute phase indicators
+        # Create a probe model for real gradient computation
+        probe_model = nn.Sequential(
+            nn.Linear(n_features, 256),
+            nn.ReLU(),
+            nn.Linear(256, 10)  # 10 classes
+        )
+        
+        # Create dataloader
+        dataloader = create_data_loader(features, batch_size=32)
+        
+        # Define loss function
+        loss_fn = nn.CrossEntropyLoss()
+        
+        # Initialize AGOP analyzer
+        agop_analyzer = RealAGOPAnalyzer()
+        
+        # Compute real AGOP
+        agop_results = agop_analyzer.compute_real_agop(probe_model, dataloader, loss_fn)
+        
+        # Return results in expected format
         results = {
-            'eigenvalues': eigenvalues,
-            'top_eigenvalue_ratio': eigenvalues[0] / (eigenvalues[1] + 1e-10),
-            'effective_rank': np.sum(eigenvalues) ** 2 / np.sum(eigenvalues ** 2),
-            'eigenvalue_concentration': np.sum(eigenvalues[:10]) / np.sum(eigenvalues),
-            'phase': self._determine_phase_from_eigenvalues(eigenvalues)
+            'eigenvalues': agop_results['eigenvalues'],
+            'top_eigenvalue_ratio': agop_results['agop_ratio'],
+            'effective_rank': agop_results['effective_rank'],
+            'eigenvalue_concentration': agop_results['top10_concentration'],
+            'phase': agop_results['phase']
         }
 
         return results
