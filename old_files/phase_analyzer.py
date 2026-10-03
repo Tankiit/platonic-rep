@@ -1,10 +1,12 @@
+# phase_analyzer.py
 import torch
 import torch.nn as nn
 import numpy as np
 from typing import Dict, List, Tuple
 from pathlib import Path
 from tqdm import tqdm
-from functorch import make_functional, vmap, jacrev
+from scipy.optimize import curve_fit
+import platonic  # The existing PRH module
 
 class RealAGOPAnalyzer:
     """
@@ -17,10 +19,20 @@ class RealAGOPAnalyzer:
     def compute_real_agop(self, model, dataloader, loss_fn, batch_size=32):
         """
         Compute real AGOP by accumulating gradient outer products
+        
+        Args:
+            model: PyTorch model
+            dataloader: DataLoader with (inputs, labels)
+            loss_fn: Loss function
+            batch_size: Batch size for efficiency
+        
+        Returns:
+            Dict with AGOP analysis
         """
-        model.eval()
+        model.eval()  # Important: eval mode for consistent gradients
         model.to(self.device)
         
+        # Initialize AGOP accumulator
         agop_accumulator = None
         total_samples = 0
         
@@ -28,33 +40,42 @@ class RealAGOPAnalyzer:
         
         with tqdm(dataloader, desc="Processing batches") as pbar:
             for batch_idx, (inputs, targets) in enumerate(pbar):
-                if batch_idx * batch_size >= 1000:
+                if batch_idx * batch_size >= 1000:  # Limit to 1000 samples for efficiency
                     break
                     
                 inputs = inputs.to(self.device)
                 targets = targets.to(self.device)
                 
+                # Zero gradients
                 model.zero_grad()
                 
+                # Forward pass
                 outputs = model(inputs)
                 loss = loss_fn(outputs, targets)
                 
+                # Backward pass to compute gradients
                 loss.backward()
                 
+                # Collect and flatten gradients
                 gradients = []
                 for param in model.parameters():
                     if param.grad is not None:
                         gradients.append(param.grad.detach().cpu().numpy().flatten())
                 
                 if gradients:
+                    # Concatenate all gradients
                     grad_vector = np.concatenate(gradients)
                     
+                    # Compute outer product for this batch
+                    # For memory efficiency, we can subsample gradient dimensions
                     if len(grad_vector) > 10000:
+                        # Random subsample for large models
                         indices = np.random.choice(len(grad_vector), 10000, replace=False)
                         grad_vector = grad_vector[indices]
                     
                     batch_agop = np.outer(grad_vector, grad_vector)
                     
+                    # Accumulate
                     if agop_accumulator is None:
                         agop_accumulator = batch_agop
                     else:
@@ -62,34 +83,31 @@ class RealAGOPAnalyzer:
                     
                     total_samples += len(inputs)
                     
-                    pbar.set_postfix({'samples': total_samples, 'grad_dim': len(grad_vector)})
+                    # Update progress
+                    pbar.set_postfix({'samples': total_samples, 
+                                     'grad_dim': len(grad_vector)})
                 
+                # Clear gradients to save memory
                 model.zero_grad()
                 torch.cuda.empty_cache()
         
-        if agop_accumulator is None:
-            return self._analyze_agop(np.zeros((1,1)))
-
+        # Normalize by number of samples
         agop = agop_accumulator / total_samples
         
+        # Analyze AGOP
         return self._analyze_agop(agop)
     
     def _analyze_agop(self, agop):
         """Analyze AGOP matrix"""
+        # Compute eigenvalues
         eigenvalues = np.linalg.eigvalsh(agop)
         eigenvalues = np.sort(eigenvalues)[::-1]
         eigenvalues = eigenvalues[eigenvalues > 1e-10]
         
-        if len(eigenvalues) == 0:
-            return {
-                'eigenvalues': [], 'agop_ratio': 0, 'effective_rank': 0,
-                'top10_concentration': 0, 'spectral_decay': {'type': 'unknown', 'exponent': None},
-                'phase': 'unknown'
-            }
-
+        # Key metrics
         results = {
-            'eigenvalues': eigenvalues[:100],
-            'agop_ratio': eigenvalues[0] / (eigenvalues[-1] + 1e-10) if len(eigenvalues) > 1 else 1.0,
+            'eigenvalues': eigenvalues[:100],  # Top 100
+            'agop_ratio': eigenvalues[0] / (eigenvalues[-1] + 1e-10),
             'effective_rank': np.sum(eigenvalues)**2 / np.sum(eigenvalues**2),
             'top10_concentration': np.sum(eigenvalues[:10]) / np.sum(eigenvalues),
             'spectral_decay': self._fit_spectral_decay(eigenvalues),
@@ -100,14 +118,10 @@ class RealAGOPAnalyzer:
     
     def _fit_spectral_decay(self, eigenvalues):
         """Fit power law to eigenvalues"""
-        from scipy.optimize import curve_fit
-        
         def power_law(x, a, b):
             return a * x**(-b)
         
         k = np.arange(1, min(len(eigenvalues), 50) + 1)
-        if len(k) < 2:
-            return {'type': 'unknown', 'exponent': None}
         try:
             popt, _ = curve_fit(power_law, k, eigenvalues[:len(k)])
             return {'type': 'power_law', 'exponent': popt[1]}
@@ -116,8 +130,6 @@ class RealAGOPAnalyzer:
     
     def _determine_phase(self, eigenvalues):
         """Determine phase from eigenvalue spectrum"""
-        if len(eigenvalues) == 0:
-            return 'unknown'
         top10_conc = np.sum(eigenvalues[:10]) / np.sum(eigenvalues)
         
         if top10_conc > 0.9:
@@ -133,154 +145,172 @@ def create_data_loader(embeddings, labels=None, batch_size=32):
     """
     import torch.utils.data as data
     
+    # Create synthetic labels if not provided
     if labels is None:
         labels = np.random.randint(0, 10, size=len(embeddings))
     
+    # Convert to tensors
     embeddings_tensor = torch.FloatTensor(embeddings)
     labels_tensor = torch.LongTensor(labels)
     
+    # Create dataset
     dataset = data.TensorDataset(embeddings_tensor, labels_tensor)
     
+    # Create dataloader
     dataloader = data.DataLoader(dataset, batch_size=batch_size, shuffle=False)
     
     return dataloader
 
-def compute_real_ntk_stability(fnet_single, params, data, device='cuda' if torch.cuda.is_available() else 'cpu'):
+class PhaseAnalyzer:
     """
-    Computes NTK stability using functorch.
+    Analyzes phase transitions in pre-trained models by computing AGOP, NTK, and IB metrics
+    from features extracted by the PRH framework.
     """
-    print("Computing real NTK stability...")
-    data = data.to(device)
 
-    def get_ntk_kernel(d):
-        jac = vmap(jacrev(fnet_single), (None, 0))(params, d)
-        jac_flat = [j.reshape(j.shape[0], j.shape[1], -1) for j in jac]
-        J = torch.cat(jac_flat, dim=2)
-        ntk = torch.einsum('Naf,Maf->NM', J, J)
-        return ntk
+    def __init__(self, dataset="minhuh/prh", subset="wit_1024"):
+        self.dataset = dataset
+        self.subset = subset
+        self.results_dir = Path("./results/phase_analysis")
+        self.results_dir.mkdir(parents=True, exist_ok=True)
 
-    ntk = get_ntk_kernel(data)
+    def compute_agop_from_features(self, features: np.ndarray, n_samples: int = 1000) -> Dict:
+        """
+        Compute AGOP metrics from extracted features using real gradient computation.
+        """
+        # Features shape: (n_samples, n_features)  
+        n_features = features.shape[-1]
 
-    # --- Perturbation Analysis for Stability ---
-    noise_scale = 0.01
-    perturbed_data = data + torch.randn_like(data) * noise_scale
-    
-    ntk_perturbed = get_ntk_kernel(perturbed_data)
-    
-    # Measure change
-    kernel_change = torch.linalg.norm(ntk - ntk_perturbed) / torch.linalg.norm(ntk)
-    stability = 1 - kernel_change.item()
-
-    # Eigenvalue analysis of the original NTK
-    eigenvalues = torch.linalg.eigvalsh(ntk).detach().cpu().numpy()[::-1]
-
-    return {
-        'mean_stability': stability,
-        'kernel_eigenvalues': eigenvalues[:20]
-    }
-
-def analyze_pretrained_models_with_real_agop_and_ntk(vision_embeddings, language_embeddings):
-    """
-    Analyze pretrained models using real AGOP and NTK computation.
-    """
-    analyzer = RealAGOPAnalyzer()
-    results = {}
-    loss_fn = nn.CrossEntropyLoss()
-
-    # For vision embeddings
-    print("\n=== Vision Model Analysis ===")
-    for layer_name, embeddings in vision_embeddings.items():
-        print(f"\nAnalyzing {layer_name}...")
-        
-        input_dim = embeddings.shape[1]
+        # Create a probe model for real gradient computation
         probe_model = nn.Sequential(
-            nn.Linear(input_dim, 256),
+            nn.Linear(n_features, 256),
             nn.ReLU(),
-            nn.Linear(256, 10)
-        ).to(analyzer.device)
+            nn.Linear(256, 10)  # 10 classes
+        )
         
-        dataloader = create_data_loader(embeddings)
+        # Create dataloader
+        dataloader = create_data_loader(features, batch_size=32)
         
-        agop_results = analyzer.compute_real_agop(probe_model, dataloader, loss_fn)
+        # Define loss function
+        loss_fn = nn.CrossEntropyLoss()
         
-        fnet, params = make_functional(probe_model)
-        def fnet_single(p, x): return fnet(p, x.unsqueeze(0)).squeeze(0)
-        ntk_results = compute_real_ntk_stability(fnet_single, params, next(iter(dataloader))[0])
+        # Initialize AGOP analyzer
+        agop_analyzer = RealAGOPAnalyzer()
+        
+        # Compute real AGOP
+        agop_results = agop_analyzer.compute_real_agop(probe_model, dataloader, loss_fn)
+        
+        # Return results in expected format
+        results = {
+            'eigenvalues': agop_results['eigenvalues'],
+            'top_eigenvalue_ratio': agop_results['agop_ratio'],
+            'effective_rank': agop_results['effective_rank'],
+            'eigenvalue_concentration': agop_results['top10_concentration'],
+            'phase': agop_results['phase']
+        }
 
-        results[f"vision_{layer_name}"] = {"agop": agop_results, "ntk": ntk_results}
-        
-        print(f"Phase (AGOP): {agop_results['phase']}")
-        print(f"AGOP ratio: {agop_results['agop_ratio']:.2e}")
-        print(f"Effective rank: {agop_results['effective_rank']:.2f}")
-        print(f"Real NTK Mean Stability: {ntk_results['mean_stability']:.4f}")
+        return results
 
-    # For language embeddings
-    print("\n=== Language Model Analysis ===")
-    for layer_name, embeddings in language_embeddings.items():
-        print(f"\nAnalyzing {layer_name}...")
-        
-        input_dim = embeddings.shape[1]
-        probe_model = nn.Sequential(
-            nn.Linear(input_dim, 256),
-            nn.ReLU(),
-            nn.Linear(256, 10)
-        ).to(analyzer.device)
-        
-        dataloader = create_data_loader(embeddings)
-        
-        agop_results = analyzer.compute_real_agop(probe_model, dataloader, loss_fn)
+    def _determine_phase_from_eigenvalues(self, eigenvalues: np.ndarray) -> str:
+        """
+        Determine phase based on eigenvalue distribution.
+        This implements the phase criteria from your paper.
+        """
+        # Normalized eigenvalues
+        eigenvalues = eigenvalues / np.sum(eigenvalues)
 
-        fnet, params = make_functional(probe_model)
-        def fnet_single(p, x): return fnet(p, x.unsqueeze(0)).squeeze(0)
-        ntk_results = compute_real_ntk_stability(fnet_single, params, next(iter(dataloader))[0])
+        # Phase determination based on concentration
+        top_10_concentration = np.sum(eigenvalues[:10])
 
-        results[f"language_{layer_name}"] = {"agop": agop_results, "ntk": ntk_results}
-        
-        print(f"Phase (AGOP): {agop_results['phase']}")
-        print(f"AGOP ratio: {agop_results['agop_ratio']:.2e}")
-        print(f"Effective rank: {agop_results['effective_rank']:.2f}")
-        print(f"Real NTK Mean Stability: {ntk_results['mean_stability']:.4f}")
-    
-    return results
+        if top_10_concentration > 0.9:
+            return "stable"
+        elif top_10_concentration > 0.7:
+            return "critical"
+        else:
+            return "chaotic"
 
-if __name__ == "__main__":
-    base_path = "/Users/tanmoy/research/Perceptual_Features/platonic-rep/complete_features"
-    
-    vision_embeddings = {}
-    language_embeddings = {}
-    
-    vision_model = "efficientnet_b0"
-    vision_path = Path(base_path) / vision_model
-    print(f"Loading embeddings from {vision_path}...")
-    for npy_file in vision_path.glob("*.npy"):
+    def compute_ntk_stability_from_features(self, features: np.ndarray,
+                                           layer_name: str = None) -> Dict:
+        """
+        Estimate NTK stability from features by measuring local changes.
+        """
+        # Compute feature similarity matrix (proxy for NTK)
+        n_samples = min(1000, len(features))
+        features_subset = features[:n_samples]
+
+        # Normalize features
+        features_norm = features_subset / (np.linalg.norm(features_subset, axis=1, keepdims=True) + 1e-8)
+
+        # Compute kernel
+        kernel = features_norm @ features_norm.T
+
+        # Estimate stability by local perturbation analysis
+        stability_scores = []
+        for i in range(100):  # Sample some points
+            # Add small noise to features
+            noise_scale = 0.01
+            perturbed = features_norm + np.random.randn(*features_norm.shape) * noise_scale
+            perturbed = perturbed / (np.linalg.norm(perturbed, axis=1, keepdims=True) + 1e-8)
+
+            # Compute perturbed kernel
+            perturbed_kernel = perturbed @ perturbed.T
+
+            # Measure change
+            kernel_change = np.linalg.norm(kernel - perturbed_kernel) / np.linalg.norm(kernel)
+            stability = 1 - kernel_change
+            stability_scores.append(stability)
+
+        return {
+            'mean_stability': np.mean(stability_scores),
+            'std_stability': np.std(stability_scores),
+            'kernel_eigenvalues': np.linalg.eigvalsh(kernel)[::-1][:20],  # Top 20
+            'layer': layer_name
+        }
+
+    def analyze_model_phases(self, model_name: str, modality: str) -> Dict:
+        """
+        Complete phase analysis for a single model using PRH infrastructure.
+        """
+        print(f"Analyzing {model_name} ({modality})...")
+
+        # Use PRH to load features
+        if modality == "vision":
+            pool_type = "cls"
+        else:  # language
+            pool_type = "avg"
+
+        # Load pre-extracted features using PRH file structure
+        feature_path = f"./results/features/{self.dataset}/{self.subset}/{model_name}_pool-{pool_type}.npy"
+
         try:
-            layer_name = npy_file.stem
-            vision_embeddings[layer_name] = np.load(npy_file)
-            print(f"  - Loaded {layer_name}")
-        except Exception as e:
-            print(f"  - Could not load {npy_file}: {e}")
+            features = np.load(feature_path, allow_pickle=True)
+            if isinstance(features, dict):
+                # Handle multi-layer features
+                features = features['features']  # Get the actual feature array
+        except FileNotFoundError:
+            print(f"Features not found for {model_name}. Run extract_features.py first.")
+            return None
 
-    language_model = "albert"
-    language_path = Path(base_path) / language_model
-    print(f"Loading embeddings from {language_path}...")
-    for npy_file in language_path.glob("*.npy"):
-        try:
-            layer_name = npy_file.stem
-            language_embeddings[layer_name] = np.load(npy_file)
-            print(f"  - Loaded {layer_name}")
-        except Exception as e:
-            print(f"  - Could not load {npy_file}: {e}")
+        # Compute phase metrics
+        agop_results = self.compute_agop_from_features(features)
+        ntk_results = self.compute_ntk_stability_from_features(features, model_name)
 
-    if vision_embeddings and language_embeddings:
-        results = analyze_pretrained_models_with_real_agop_and_ntk(vision_embeddings, language_embeddings)
-    
-        print("\n=== Cross-Modal Phase Comparison ===")
-        for v_layer in vision_embeddings.keys():
-            for l_layer in language_embeddings.keys():
-                v_phase = results[f"vision_{v_layer}"]['agop']['phase']
-                l_phase = results[f"language_{l_layer}"]['agop']['phase']
-                v_ntk = results[f"vision_{v_layer}"]['ntk']['mean_stability']
-                l_ntk = results[f"language_{l_layer}"]['ntk']['mean_stability']
-                print(f"{v_layer} (AGOP: {v_phase}, NTK: {v_ntk:.3f}) vs {l_layer} (AGOP: {l_phase}, NTK: {l_ntk:.3f})")
-    else:
-        print("Could not load embeddings. Skipping analysis.")
+        # Combine results
+        return {
+            'model': model_name,
+            'modality': modality,
+            'agop': agop_results,
+            'ntk': ntk_results,
+            'phase': agop_results['phase'],
+            'phase_score': self._compute_phase_score(agop_results, ntk_results)
+        }
+
+    def _compute_phase_score(self, agop_results: Dict, ntk_results: Dict) -> float:
+        """
+        Combine AGOP and NTK metrics into a single phase score.
+        Higher scores indicate more stable/organized phases.
+        """
+        agop_score = agop_results['eigenvalue_concentration']
+        ntk_score = ntk_results['mean_stability']
+
+        # Weighted combination
+        return 0.6 * agop_score + 0.4 * ntk_score
