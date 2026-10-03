@@ -32,7 +32,7 @@ def build_encoder(name: str, device):
         version = timm.__version__
     else:
         import open_clip
-        clip, _, _ = open_clip.create_model_and_transforms(ident, pretrained=tag)
+        clip, _, _ = open_clip.create_model_and_transforms(ident, pretrained=tag, force_quick_gelu=(tag == "openai"))
         model = clip.visual
         mean, std = open_clip.OPENAI_DATASET_MEAN, open_clip.OPENAI_DATASET_STD
         blocks, kind, n_prefix = list(model.transformer.resblocks), "vit", 1
@@ -48,7 +48,8 @@ def build_encoder(name: str, device):
 
     batch_first = bool(getattr(getattr(model, "transformer", None), "batch_first", True))
     info = dict(library=lib, identifier=ident, tag=tag, version=version, kind=kind, n_prefix=n_prefix,
-                n_blocks=len(blocks), batch_first=batch_first, mean=list(mean), std=list(std))
+                n_blocks=len(blocks), batch_first=batch_first, mean=list(mean), std=list(std),
+                force_quick_gelu=(lib == "open_clip" and tag == "openai"))
     return model, preprocess, blocks, info
 
 

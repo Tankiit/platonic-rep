@@ -1,10 +1,14 @@
 # uq_lab: experiments for "Alignment Does Not Identify Epistemic Uncertainty"
 
-Flat, design-first scaffold (stubs with TODOs; nothing is implemented except config). Conventions: plain imports,
+Implemented experiment suite with logged submission and revision results. Some optional experiments remain unimplemented. Conventions: plain imports,
 Mac-first (MPS; float64 CPU for linear algebra), no multiprocessing, established libraries (torch, timm, open_clip,
 scikit-learn, scipy). Only `factory.py` of your existing code imports `tinker`; the text/Tinker arm is banked, not in this package.
 
-## Run order
+## EU-specific follow-up
+
+See [EU_SPECIFIC.md](EU_SPECIFIC.md) for exact linear/RBF GP experiments that separate latent posterior variance from prescribed observation noise, compare six alignment indices, and test class-withholding and acquisition-set agreement. Use `prepare_eu_features.py` to extract caches and `run_eu_image_suite.py` for all ten withheld classes. These analyses are exploratory and do not modify the frozen original PREREG.
+
+## Original design run order (historical)
 1. `pytest -k ref -q`  -> the 9 reference tests pass with no code of yours; they check the theory (BLR dual=primal, scale = prior change,
    resolvent bound, toy CKA-vs-EU, tail reshaping, bootstrap-vs-posterior shrinkage, d_eff identity, S_rho primal trick).
 2. Fill `uq_data.py` + `uq_features.py`; run `benchmark_throughput` for each encoder; fix the encoder list (verify timm/open_clip names).
@@ -26,7 +30,7 @@ scikit-learn, scipy). Only `factory.py` of your existing code imports `tinker`; 
 | uq_run.py | CLI |
 | test_uq_theory.py | reference tests (run now) + implementation tests (skip until implemented) |
 
-## Rules baked into the stubs
+## Original experiment conventions
 - Human soft labels are for evaluation only, never to fit or tune anything that yields EU.
 - EU width = quantile interval, not max-min. Report the M-stability curve.
 - Calibrate alignment with permutation nulls; per-item metrics need per-item nulls; calibrate the MAX if you select layers.
