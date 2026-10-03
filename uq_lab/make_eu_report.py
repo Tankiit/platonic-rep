@@ -24,9 +24,13 @@ def report(runs, output):
                              (predictions.prior==1) & (predictions.fraction==1)]
         lines.extend([f'## {root.name}', '',
                       f"Head: {manifest['head']}; mode: {manifest['mode']}; seeds: {manifest['seeds']}; held-out class: {manifest['heldout'] if manifest['mode']=='features' else 'controlled coverage shift'}.", '',
-                      f'{len(pairs)} pair/configuration records; {len(diagnostics)} variance checks; all contraction checks passed: {bool(diagnostics.monotonic_pass.all())}.', '',
+                      f'{len(pairs)} pair/configuration records; {len(diagnostics)} diagnostic records; all contraction checks passed: {bool(diagnostics.monotonic_pass.all())}.', '',
                       '| Metric | EU ranking | Acquisition overlap | ID-only EU | Held-out-only EU |',
                       '|---|---|---|---|---|'])
+        actual=pairs[(pairs.noise_condition=='homoscedastic')&(pairs.prior==1)&(pairs.fraction==1)]
+        lines.insert(len(lines)-2,
+            f'Observed mean cross-encoder EU agreement: {actual.eu_agreement.mean():.2f}; observed mean top-10% set overlap: {actual.acquisition_overlap.mean():.2f} (chance expectation 0.10). The following table reports how well each metric predicts those outcomes, not the outcomes themselves.')
+        lines.insert(len(lines)-2,'')
         for metric, group in selected.groupby('metric'):
             values=[]
             for target in ('eu_agreement','acquisition_overlap','eu_id','eu_heldout'):
@@ -39,6 +43,9 @@ def report(runs, output):
             lines.extend(['', 'Near-saturated metrics (span < 1e-4): '+', '.join(warnings.index)+'. Their rank correlations can depend on tiny numerical differences and should not support a metric-superiority claim.'])
         d=diagnostics[(diagnostics.noise_condition=='homoscedastic') &
                       (diagnostics.prior==1)&(diagnostics.fraction==1)]
+        fixed=pairs[pairs.noise_condition=='homoscedastic'].groupby(['seed','a','b']).eu_agreement.agg(['min','max'])
+        spans=fixed['max']-fixed['min']
+        lines.extend(['',f'With the same six alignment scores held fixed, changing prior/training fraction changes EU agreement by a median span of {spans.median():.3f} and a maximum span of {spans.max():.3f}.'])
         ratio=d.mean_eu_heldout/d.mean_eu_id
         lines.extend(['', f'Held-out/ID mean EU ratio across views/seeds: {ratio.min():.2f}–{ratio.max():.2f}.', '',
                       f"Source SHA-256: `{manifest['source_sha256']}`.", ''])
@@ -48,7 +55,8 @@ def report(runs, output):
         aggregated=['## Across withheld classes', '',
             'Each cell averages seeds within a withheld class, then reports the mean and min–max across classes. These are descriptive sensitivity summaries, not confidence intervals.', '']
         for head,group in selected.groupby('head'):
-            aggregated.extend([f'### {head}', '',
+            classes=sorted(group.heldout_class.unique().tolist())
+            aggregated.extend([f'### {head}', '', f'Withheld classes: {classes}.', '',
                 '| Metric | EU ranking | Acquisition overlap | ID-only EU | Held-out-only EU |',
                 '|---|---|---|---|---|'])
             for metric,mgroup in group.groupby('metric'):

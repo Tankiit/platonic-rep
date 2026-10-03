@@ -1,0 +1,22 @@
+{
+  "max_train": 1024,
+  "head": "rbf",
+  "mode": "synthetic",
+  "root": "uq_runs",
+  "layers": null,
+  "labels": null,
+  "heldout": 0,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "output": "uq_lab/uq_runs/eu_specific_synthetic_rbf",
+  "alignment_source_sha256": "eb9d8842b8c8d5e8173e2551fb3e3f305dae70e02e02ad5acf148d1270529d1f",
+  "numpy_version": "2.2.6",
+  "exploratory": true,
+  "source_sha256": "c1403c0af96ab3003f62dfe175c2ed562d798bb9bfe18b7fa959a7f67fbf017b",
+  "interpretation": "Exact EU under a prescribed Gaussian likelihood; not classification EU"
+}

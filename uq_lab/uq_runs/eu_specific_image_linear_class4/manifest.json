@@ -1,0 +1,255 @@
+{
+  "max_train": 1024,
+  "head": "linear",
+  "mode": "features",
+  "root": "uq_lab/uq_runs_eu_pilot",
+  "layers": [
+    2
+  ],
+  "labels": "uq_lab/uq_runs_eu_pilot/cifar10_train_labels.npy",
+  "heldout": 4,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "output": "uq_lab/uq_runs/eu_specific_image_linear_class4",
+  "label_sha256": "0cb3f5c00f7b479b52bb2e840c3334db08d963c5e0bd55d9989431ac5484ae08",
+  "feature_sha256": {
+    "cifar10_train_clip_b16.npy": "a3b202f30e9c301562cabf65771740bf5630c71fac96a970364eb34d21bcd4b5",
+    "cifar10_train_convnext_s.npy": "435b7aebcc5119c7bd2fe4c18ace049ebeabc0c643a9e63638cc3ff5d7ead33f",
+    "cifar10_train_dinov2_b.npy": "210c973de2dffe513b4ddde78d01cb3ce952b4bbb3de5d8787d6fb2de06e761c",
+    "cifar10_train_mae_b16.npy": "ad826c5ab13c290b5dd5952cbb97a63a3eede68445f3e708147945185e7b3240",
+    "cifar10_train_vit_sup_b16.npy": "1d167a21612063a40dff9d2440ae508f69e3a64228157cd8ac77bdd760f7d71f"
+  },
+  "cache_metadata": {
+    "cifar10_train_clip_b16.json": {
+      "library": "open_clip",
+      "identifier": "ViT-B-16",
+      "tag": "openai",
+      "version": "3.3.0",
+      "kind": "vit",
+      "n_prefix": 1,
+      "n_blocks": 12,
+      "batch_first": true,
+      "mean": [
+        0.48145466,
+        0.4578275,
+        0.40821073
+      ],
+      "std": [
+        0.26862954,
+        0.26130258,
+        0.27577711
+      ],
+      "force_quick_gelu": true,
+      "encoder": "clip_b16",
+      "dataset": "cifar10",
+      "split": "train",
+      "taps": [
+        5,
+        8,
+        11
+      ],
+      "rel_depths": [
+        0.5,
+        0.75,
+        1.0
+      ],
+      "image_size": 224,
+      "upsample": "bicubic 32->224",
+      "pooling": "mean patch tokens / spatial mean, raw block out",
+      "N": 3000,
+      "d": 768,
+      "tap_dims": [
+        768,
+        768,
+        768
+      ],
+      "done": 3000
+    },
+    "cifar10_train_convnext_s.json": {
+      "library": "timm",
+      "identifier": "convnext_small.fb_in22k_ft_in1k",
+      "tag": null,
+      "version": "1.0.7",
+      "kind": "conv",
+      "n_prefix": 0,
+      "n_blocks": 36,
+      "batch_first": true,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "encoder": "convnext_s",
+      "dataset": "cifar10",
+      "split": "train",
+      "taps": [
+        17,
+        26,
+        35
+      ],
+      "rel_depths": [
+        0.5,
+        0.75,
+        1.0
+      ],
+      "image_size": 224,
+      "upsample": "bicubic 32->224",
+      "pooling": "mean patch tokens / spatial mean, raw block out",
+      "N": 3000,
+      "d": 768,
+      "tap_dims": [
+        384,
+        384,
+        768
+      ],
+      "done": 3000
+    },
+    "cifar10_train_dinov2_b.json": {
+      "library": "timm",
+      "identifier": "vit_base_patch14_dinov2.lvd142m",
+      "tag": null,
+      "version": "1.0.7",
+      "kind": "vit",
+      "n_prefix": 1,
+      "n_blocks": 12,
+      "batch_first": true,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "encoder": "dinov2_b",
+      "dataset": "cifar10",
+      "split": "train",
+      "taps": [
+        5,
+        8,
+        11
+      ],
+      "rel_depths": [
+        0.5,
+        0.75,
+        1.0
+      ],
+      "image_size": 224,
+      "upsample": "bicubic 32->224",
+      "pooling": "mean patch tokens / spatial mean, raw block out",
+      "N": 3000,
+      "d": 768,
+      "tap_dims": [
+        768,
+        768,
+        768
+      ],
+      "done": 3000
+    },
+    "cifar10_train_mae_b16.json": {
+      "library": "timm",
+      "identifier": "vit_base_patch16_224.mae",
+      "tag": null,
+      "version": "1.0.7",
+      "kind": "vit",
+      "n_prefix": 1,
+      "n_blocks": 12,
+      "batch_first": true,
+      "mean": [
+        0.485,
+        0.456,
+        0.406
+      ],
+      "std": [
+        0.229,
+        0.224,
+        0.225
+      ],
+      "encoder": "mae_b16",
+      "dataset": "cifar10",
+      "split": "train",
+      "taps": [
+        5,
+        8,
+        11
+      ],
+      "rel_depths": [
+        0.5,
+        0.75,
+        1.0
+      ],
+      "image_size": 224,
+      "upsample": "bicubic 32->224",
+      "pooling": "mean patch tokens / spatial mean, raw block out",
+      "N": 3000,
+      "d": 768,
+      "tap_dims": [
+        768,
+        768,
+        768
+      ],
+      "done": 3000
+    },
+    "cifar10_train_vit_sup_b16.json": {
+      "library": "timm",
+      "identifier": "vit_base_patch16_224.augreg_in21k_ft_in1k",
+      "tag": null,
+      "version": "1.0.7",
+      "kind": "vit",
+      "n_prefix": 1,
+      "n_blocks": 12,
+      "batch_first": true,
+      "mean": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "std": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "encoder": "vit_sup_b16",
+      "dataset": "cifar10",
+      "split": "train",
+      "taps": [
+        5,
+        8,
+        11
+      ],
+      "rel_depths": [
+        0.5,
+        0.75,
+        1.0
+      ],
+      "image_size": 224,
+      "upsample": "bicubic 32->224",
+      "pooling": "mean patch tokens / spatial mean, raw block out",
+      "N": 3000,
+      "d": 768,
+      "tap_dims": [
+        768,
+        768,
+        768
+      ],
+      "done": 3000
+    }
+  },
+  "alignment_source_sha256": "eb9d8842b8c8d5e8173e2551fb3e3f305dae70e02e02ad5acf148d1270529d1f",
+  "numpy_version": "2.2.6",
+  "exploratory": true,
+  "source_sha256": "c1403c0af96ab3003f62dfe175c2ed562d798bb9bfe18b7fa959a7f67fbf017b",
+  "interpretation": "Exact EU under a prescribed Gaussian likelihood; not classification EU"
+}
