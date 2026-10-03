@@ -4,10 +4,17 @@
 # Data directories
 data/
 
+# Feature dumps and arrays
+*.npy
+*.npz
+uq_runs_smoke/
+uq_lab/uq_runs_smoke/
+
 # Results and output directories
-results/
-test_output/
-logs/
+/results/
+/test_output/
+/logs/
+.pytest_cache/
 
 # Model files and checkpoints
 *.pt

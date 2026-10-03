@@ -1,0 +1,70 @@
+### Acronym check (advisory; no reply needed)
+Coverage: body (partial)
+Not in this input: English abstract, Chinese abstract.
+Not checked:
+- Body, line 141: GULP (the initials before its parentheses do not spell it)
+- Body, line 1598: ViT (the initials before its parentheses do not spell it)
+
+| Scope | Line | Rule | Acronym | Uses |
+|---|---|---|---|---|
+| Body | 35 | Not defined | CIFAR | 9 |
+| Body | 37 | Not defined | CCA | 6 |
+| Body | 60 | Defined again | CKA | 54 |
+| Body | 114 | Not defined | AND | 1 |
+| Body | 114 | Not defined | SETUP | 1 |
+| Body | 114 | Not defined | WORK | 1 |
+| Body | 121 | Not defined | RdA | 1 |
+| Body | 124 | Not defined | AB | 13 |
+| Body | 131 | Not defined | NN | 2 |
+| Body | 144 | Not defined | RSA | 1 |
+| Body | 165 | Not defined | AI | 8 |
+| Body | 180 | Not defined | AU | 18 |
+| Body | 198 | Not defined | THEORY | 1 |
+| Body | 202 | Not defined | MB | 9 |
+| Body | 204 | Not defined | ABMB | 1 |
+| Body | 214 | Not defined | BI | 2 |
+| Body | 258 | Not defined | dAdB | 3 |
+| Body | 449 | Not defined | DINOv2 | 13 |
+| Body | 450 | Not defined | CLIP | 8 |
+| Body | 453 | Not defined | MAE | 8 |
+| Body | 464 | Not defined | NLL | 2 |
+| Body | 1083 | Not defined | MI | 2 |
+| Body | 1119 | Not defined | mKNN | 1 |
+| Body | 1155 | Not defined | DCIC | 2 |
+| Body | 1186 | Not defined | ReQ | 1 |
+| Body | 1205 | Not defined | CVF | 5 |
+| Body | 1205 | Not defined | IEEE | 5 |
+| Body | 1225 | Defined again | ICLR | 3 |
+| Body | 1233 | Not defined | PMLR | 1 |
+| Body | 1237 | Defined again | CVPR | 4 |
+| Body | 1264 | Defined again | ICML | 5 |
+| Body | 1290 | Defined again | CVPR | 4 |
+| Body | 1307 | Defined again | CVPR | 4 |
+| Body | 1323 | Defined again | ICML | 5 |
+| Body | 1333 | Not defined | SVCCA | 1 |
+| Body | 1338 | Not defined | MIT | 1 |
+| Body | 1343 | Defined again | ICLR | 3 |
+| Body | 1348 | Defined again | ICML | 5 |
+| Body | 1363 | Defined again | ICML | 5 |
+| Body | 1433 | Not defined | GPU | 1 |
+| Body | 1472 | Not defined | PROOFS | 1 |
+| Body | 1479 | Not defined | ABQ | 2 |
+| Body | 1554 | Not defined | CKA2 | 2 |
+| Body | 1582 | Not defined | GT | 1 |
+| Body | 1582 | Not defined | GZT | 1 |
+| Body | 1588 | Not defined | PREREG | 2 |
+| Body | 1589 | Not defined | SHA | 1 |
+| Body | 1590 | Not defined | FROZEN | 1 |
+| Body | 1602 | Not defined | CEi | 1 |
+| Body | 1604 | Not defined | BFGS | 1 |
+| Body | 1608 | Not defined | GGN | 1 |
+| Body | 1608 | Not defined | MAP | 1 |
+| Body | 1620 | Not defined | GB | 1 |
+| Body | 1620 | Not defined | MPS | 1 |
+| Body | 1621 | Not defined | CPU | 1 |
+| Body | 1623 | Not defined | BY | 1 |
+| Body | 1623 | Not defined | CC | 1 |
+| Body | 1623 | Not defined | NC | 1 |
+| Body | 1623 | Not defined | SA | 1 |
+| Body | 1626 | Not defined | POST | 1 |
+| Body | 1626 | Not defined | REVIEW | 1 |

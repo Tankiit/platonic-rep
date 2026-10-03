@@ -1,0 +1,44 @@
+{
+ "library": "timm",
+ "identifier": "convnext_small.fb_in22k_ft_in1k",
+ "tag": null,
+ "version": "1.0.21",
+ "kind": "conv",
+ "n_prefix": 0,
+ "n_blocks": 36,
+ "batch_first": true,
+ "mean": [
+  0.485,
+  0.456,
+  0.406
+ ],
+ "std": [
+  0.229,
+  0.224,
+  0.225
+ ],
+ "encoder": "convnext_s",
+ "dataset": "cifar10",
+ "split": "train",
+ "taps": [
+  17,
+  26,
+  35
+ ],
+ "rel_depths": [
+  0.5,
+  0.75,
+  1.0
+ ],
+ "image_size": 224,
+ "upsample": "bicubic 32->224",
+ "pooling": "mean patch tokens / spatial mean, raw block out",
+ "N": 50000,
+ "d": 768,
+ "tap_dims": [
+  384,
+  384,
+  768
+ ],
+ "done": 50000
+}

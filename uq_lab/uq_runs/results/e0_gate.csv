@@ -1,0 +1,12 @@
+check,value,ci_lo,ci_hi,r_half,rho_plugin_miller_madow,rho_plugin_dirichlet,gate,passed
+cifar10h_split_half,0.69967991513467,0.6941975078648828,0.7054144648811247,0.5380931077143923,0.9999841349912365,0.9549687447192955,,
+known_au_dinov2_b_T1.0,0.9614618553352717,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_dinov2_b_T3.0,0.9162264115737615,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_clip_b16_T1.0,0.960529406477294,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_clip_b16_T3.0,0.933624235570251,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_vit_sup_b16_T1.0,0.9636655491366556,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_vit_sup_b16_T3.0,0.9125990865327287,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_convnext_s_T1.0,0.94731960784088,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_convnext_s_T3.0,0.8880884681102134,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_mae_b16_T1.0,0.959081037710565,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True
+known_au_mae_b16_T3.0,0.9411537656128316,,,,,,"Spearman(model AU, true AU) >= 0.5, else stop and debug.",True

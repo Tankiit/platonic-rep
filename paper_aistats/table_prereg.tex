@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\caption{Pre-registered predictions and outcomes (frozen before any real-data result). The last column is the verdict on the \emph{prediction}. $^\dagger$Uninformative in hindsight: the re-test partial agreement at $M=50$ is itself $\approx0.56$, so the threshold could not be reached. $^\ddagger$The frozen falsifier had no numeric threshold; our operationalisation is post hoc (\Cref{app:details}). For S the range is over leave-one-encoder-out subsets (\Cref{sec:srho}).}
+\label{tab:prereg}
+\setlength{\tabcolsep}{3pt}
+\small
+\begin{tabular}{l p{7.4cm} p{4.6cm} p{2.6cm}}
+\toprule
+id & prediction (falsifier) & observed & verdict \\
+\midrule
+E0 & pipeline recovers known AU (gate: Spearman $\ge0.5$) & 0.89--0.96 & supported \\
+F-data & data term matters on identical features (falsifier: partial EU agr.\ 10\% vs 100\% $>0.9$)$^\dagger$ & 0.26 & inconclusive$^\dagger$ \\
+F-AU & AU agreement protected relative to EU (falsifier: AU degrades as much)$^\ddagger$ & drop 0.10 vs 0.10 & \textbf{not supported} \\
+E2b-scale & rescaling moves EU at fixed wd, not when re-tuned (Prop.~\ref{prop:scale}) & Laplace $\times$0.02--62 & supported \\
+E2b-tail & bootstrap EU moves less than Laplace EU (Lemma~\ref{lem:boot}) & 6/6 & supported \\
+E4 & head and data dominate at high alignment (falsifier: encoder share $>80\%$) & 93\% & \textbf{not supported} \\
+S & $S_\rho$ predicts EU agreement better than CKA (falsifier: no better)$^\ddagger$ & 0.83 vs 0.64; LOEO diff.\ +0.09 to +0.26 & inconclusive \\
+Spec & $d_{\mathrm{eff}}(\rho)$ predicts mean EU & closed form 0.90; bootstrap -0.19 & partly supported \\
+\bottomrule
+\end{tabular}
+\end{table*}

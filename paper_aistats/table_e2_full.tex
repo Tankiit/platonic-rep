@@ -1,0 +1,46 @@
+\begin{table}[h]
+\centering
+\caption{E2 per encoder: Spearman (partial) agreement for EU width, mutual information and AU, and model AU versus human entropy (fraction of ceiling).}
+\small
+\begin{tabular}{llccc}
+\toprule
+encoder & pair & EU width & EU MI & AU \\
+\midrule
+DINOv2-B & re-test floor & 1.00 (0.61) & 0.99 (0.78) & 1.00 \\
+DINOv2-B & 25\% vs 100\% data & 0.96 (0.48) & 0.95 (0.54) & 0.97 \\
+DINOv2-B & 10\% vs 100\% data & 0.94 (0.40) & 0.93 (0.42) & 0.94 \\
+DINOv2-B & disjoint halves & 0.94 (0.45) & 0.93 (0.55) & 0.95 \\
+DINOv2-B & wd $\div10$ & 0.99 (0.28) & 0.96 (0.19) & 0.99 \\
+DINOv2-B & wd $\times10$ & 0.98 (0.55) & 0.98 (0.53) & 0.98 \\
+DINOv2-B & AU vs human & \multicolumn{3}{c}{0.36 (0.43 of $\sqrt{\text{ceiling}}$); test acc. 0.98} \\ \midrule
+CLIP-B/16 & re-test floor & 1.00 (0.52) & 0.99 (0.73) & 1.00 \\
+CLIP-B/16 & 25\% vs 100\% data & 0.95 (0.33) & 0.94 (0.50) & 0.95 \\
+CLIP-B/16 & 10\% vs 100\% data & 0.90 (0.21) & 0.89 (0.39) & 0.90 \\
+CLIP-B/16 & disjoint halves & 0.91 (0.30) & 0.91 (0.52) & 0.92 \\
+CLIP-B/16 & wd $\div10$ & 0.98 (0.11) & 0.97 (0.35) & 0.97 \\
+CLIP-B/16 & wd $\times10$ & 0.97 (0.45) & 0.96 (0.58) & 0.96 \\
+CLIP-B/16 & AU vs human & \multicolumn{3}{c}{0.43 (0.51 of $\sqrt{\text{ceiling}}$); test acc. 0.95} \\ \midrule
+ViT-B/16 sup. & re-test floor & 1.00 (0.55) & 0.99 (0.72) & 1.00 \\
+ViT-B/16 sup. & 25\% vs 100\% data & 0.95 (0.43) & 0.95 (0.49) & 0.96 \\
+ViT-B/16 sup. & 10\% vs 100\% data & 0.93 (0.25) & 0.92 (0.30) & 0.93 \\
+ViT-B/16 sup. & disjoint halves & 0.94 (0.39) & 0.93 (0.48) & 0.95 \\
+ViT-B/16 sup. & wd $\div10$ & 0.99 (0.28) & 0.97 (0.21) & 0.99 \\
+ViT-B/16 sup. & wd $\times10$ & 0.98 (0.43) & 0.97 (0.48) & 0.98 \\
+ViT-B/16 sup. & AU vs human & \multicolumn{3}{c}{0.35 (0.42 of $\sqrt{\text{ceiling}}$); test acc. 0.98} \\ \midrule
+ConvNeXt-S & re-test floor & 1.00 (0.55) & 0.99 (0.78) & 1.00 \\
+ConvNeXt-S & 25\% vs 100\% data & 0.93 (0.39) & 0.93 (0.54) & 0.94 \\
+ConvNeXt-S & 10\% vs 100\% data & 0.88 (0.28) & 0.88 (0.41) & 0.89 \\
+ConvNeXt-S & disjoint halves & 0.88 (0.40) & 0.88 (0.59) & 0.89 \\
+ConvNeXt-S & wd $\div10$ & 0.98 (0.12) & 0.97 (0.35) & 0.98 \\
+ConvNeXt-S & wd $\times10$ & 0.97 (0.50) & 0.97 (0.63) & 0.97 \\
+ConvNeXt-S & AU vs human & \multicolumn{3}{c}{0.34 (0.40 of $\sqrt{\text{ceiling}}$); test acc. 0.97} \\ \midrule
+MAE-B/16 & re-test floor & 0.99 (0.58) & 0.99 (0.76) & 1.00 \\
+MAE-B/16 & 25\% vs 100\% data & 0.90 (0.19) & 0.90 (0.41) & 0.91 \\
+MAE-B/16 & 10\% vs 100\% data & 0.84 (0.17) & 0.84 (0.35) & 0.85 \\
+MAE-B/16 & disjoint halves & 0.88 (0.24) & 0.87 (0.48) & 0.89 \\
+MAE-B/16 & wd $\div10$ & 0.99 (0.44) & 0.98 (0.68) & 0.99 \\
+MAE-B/16 & wd $\times10$ & 0.97 (0.52) & 0.97 (0.66) & 0.98 \\
+MAE-B/16 & AU vs human & \multicolumn{3}{c}{0.38 (0.46 of $\sqrt{\text{ceiling}}$); test acc. 0.90} \\
+\bottomrule
+\end{tabular}
+\end{table}

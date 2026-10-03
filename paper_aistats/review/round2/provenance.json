@@ -1,0 +1,76 @@
+{
+  "axes": {
+    "blind_to_peer_outputs": true,
+    "fresh_context": true,
+    "human_distinct": false,
+    "model_family_distinct": false,
+    "provider_distinct": false,
+    "role_separated": true
+  },
+  "contract_id": "reviewer/reviewer_full/v2",
+  "contract_sha256": "e9712090d2469fea15a37b8e22d4e137afbcb2bf38d5789939c5df56738ef7af",
+  "correlated_error_disclosure": {
+    "reason": "same_model_family",
+    "required": true,
+    "text": "All model-executed review seats used one model family; role separation does not remove correlated-error risk."
+  },
+  "execution_topology_sha256": "c259b3f71e07a5edf63a2840650cfafb0d9380f68f5533b18fdd78f82f6e2603",
+  "fresh_context_scope": "within_panel_attempt_only",
+  "independence_claim": "not_computed_from_personas",
+  "mode": "reviewer_full",
+  "normalized_manifest_sha256": "a8cd236303a1f7828e7a7aa8e9b7b3f7add5988cad924c1fc7c3ede2432ab811",
+  "panel_id": "uq-aistats2027-round2",
+  "schema_version": "review-panel-provenance/1.0",
+  "seats": [
+    {
+      "actor_type": "model",
+      "context_id": "subagent-ad3c74aefa4785313",
+      "human_reviewer_id": null,
+      "model_family": "claude-opus-5-5",
+      "peer_outputs_visible": false,
+      "provider": "anthropic",
+      "role_id": "eic",
+      "seat_id": "EIC"
+    },
+    {
+      "actor_type": "model",
+      "context_id": "subagent-a2ad56387f7c71705",
+      "human_reviewer_id": null,
+      "model_family": "claude-opus-5-5",
+      "peer_outputs_visible": false,
+      "provider": "anthropic",
+      "role_id": "methodology",
+      "seat_id": "R1"
+    },
+    {
+      "actor_type": "model",
+      "context_id": "subagent-a7d338913dcdb8d20",
+      "human_reviewer_id": null,
+      "model_family": "claude-opus-5-5",
+      "peer_outputs_visible": false,
+      "provider": "anthropic",
+      "role_id": "domain",
+      "seat_id": "R2"
+    },
+    {
+      "actor_type": "model",
+      "context_id": "subagent-aa8b0b9be17c7e0e7",
+      "human_reviewer_id": null,
+      "model_family": "claude-opus-5-5",
+      "peer_outputs_visible": false,
+      "provider": "anthropic",
+      "role_id": "perspective",
+      "seat_id": "R3"
+    },
+    {
+      "actor_type": "model",
+      "context_id": "subagent-a9cae7bdf1053354e",
+      "human_reviewer_id": null,
+      "model_family": "claude-opus-5-5",
+      "peer_outputs_visible": false,
+      "provider": "anthropic",
+      "role_id": "da",
+      "seat_id": "DA"
+    }
+  ]
+}

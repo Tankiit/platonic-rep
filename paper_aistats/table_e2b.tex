@@ -1,0 +1,23 @@
+\begin{table*}[t]
+\centering
+\caption{E2b (fixed weight decay): alignment of the transformed to the original features, Spearman rank agreement of EU with the untransformed head, and mean EU relative to it, for both encoders (width = bootstrap quantile width; Laplace = MI for the rank, logit variance for the ratio). The text summarises ranges over both encoders.}
+\label{tab:e2b}
+\setlength{\tabcolsep}{3pt}
+\small
+\begin{tabular}{lcccccccccccc}
+\toprule
+ & \multicolumn{6}{c}{DINOv2-B} & \multicolumn{6}{c}{CLIP-B/16} \\ \cmidrule(lr){2-7}\cmidrule(lr){8-13}
+ & CKA & mKNN & \multicolumn{2}{c}{rank agr.} & \multicolumn{2}{c}{mean ratio} & CKA & mKNN & \multicolumn{2}{c}{rank agr.} & \multicolumn{2}{c}{mean ratio} \\
+transform & & & width & Lapl. & width & Lapl. & & & width & Lapl. & width & Lapl. \\
+\midrule
+$c=$0.1 & 1.000 & 1.00 & 0.94 & 0.89 & 0.56 & 0.017 & 1.000 & 1.00 & 0.89 & 0.85 & 0.38 & 0.0301 \\
+$c=$0.3 & 1.000 & 1.00 & 0.98 & 0.94 & 0.74 & 0.125 & 1.000 & 1.00 & 0.96 & 0.95 & 0.62 & 0.182 \\
+$c=$1.0 & 1.000 & 1.00 & 1.00 & 1.00 & 1.00 & 1 & 1.000 & 1.00 & 1.00 & 1.00 & 1.00 & 1 \\
+$c=$3.0 & 1.000 & 1.00 & 0.99 & 0.91 & 1.29 & 6.78 & 1.000 & 1.00 & 0.98 & 0.92 & 1.45 & 4.24 \\
+$c=$10.0 & 1.000 & 1.00 & 0.97 & 0.85 & 1.52 & 61.7 & 1.000 & 1.00 & 0.95 & 0.72 & 1.84 & 39.3 \\
+tail $s=$0.5 & 1.000 & 0.96 & 1.00 & 1.00 & 1.02 & 0.894 & 1.000 & 0.95 & 1.00 & 0.99 & 0.98 & 0.788 \\
+tail $s=$2.0 & 0.998 & 0.89 & 1.00 & 0.99 & 1.07 & 1.27 & 0.999 & 0.86 & 0.99 & 0.98 & 1.13 & 1.47 \\
+tail $s=$4.0 & 0.956 & 0.68 & 0.98 & 0.95 & 1.30 & 1.8 & 0.982 & 0.62 & 0.97 & 0.92 & 1.39 & 2.28 \\
+\bottomrule
+\end{tabular}
+\end{table*}

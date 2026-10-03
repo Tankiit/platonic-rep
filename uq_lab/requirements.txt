@@ -1,0 +1,11 @@
+numpy
+scipy
+pandas
+scikit-learn
+torch
+torchvision
+timm
+open_clip_torch
+pytest
+# optional: second EU estimator
+laplace-torch

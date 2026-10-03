@@ -1,0 +1,53 @@
+### Acronym check (advisory; no reply needed)
+Coverage: body (partial)
+Not in this input: English abstract, Chinese abstract.
+Not checked:
+- Body, line 1218: ViT (the initials before its parentheses do not spell it)
+
+| Scope | Line | Rule | Acronym | Uses |
+|---|---|---|---|---|
+| Body | 9 | Defined after first use | CKA | 45 |
+| Body | 31 | Not defined | CIFAR | 8 |
+| Body | 227 | Not defined | MB | 6 |
+| Body | 234 | Not defined | dAdB | 1 |
+| Body | 381 | Not defined | DINOv2 | 6 |
+| Body | 382 | Not defined | CLIP | 1 |
+| Body | 385 | Not defined | MAE | 1 |
+| Body | 396 | Not defined | NLL | 2 |
+| Body | 581 | Not defined | MI | 3 |
+| Body | 605 | Not defined | mKNN | 2 |
+| Body | 662 | Not defined | NN | 6 |
+| Body | 827 | Not defined | DCIC | 2 |
+| Body | 834 | Not defined | AI | 6 |
+| Body | 855 | Not defined | ReQ | 1 |
+| Body | 871 | Not defined | CVF | 5 |
+| Body | 871 | Not defined | IEEE | 5 |
+| Body | 890 | Defined again | ICLR | 2 |
+| Body | 896 | Defined again | CVPR | 4 |
+| Body | 923 | Defined again | ICML | 3 |
+| Body | 944 | Defined again | CVPR | 4 |
+| Body | 955 | Defined again | CVPR | 4 |
+| Body | 967 | Defined again | ICML | 3 |
+| Body | 976 | Not defined | SVCCA | 1 |
+| Body | 981 | Not defined | MIT | 1 |
+| Body | 1062 | Not defined | GPU | 1 |
+| Body | 1100 | Not defined | PROOFS | 1 |
+| Body | 1105 | Not defined | AB | 11 |
+| Body | 1107 | Not defined | ABQ | 2 |
+| Body | 1110 | Not defined | BI | 1 |
+| Body | 1179 | Not defined | CKA2 | 2 |
+| Body | 1207 | Not defined | GT | 1 |
+| Body | 1207 | Not defined | GZT | 1 |
+| Body | 1213 | Not defined | PREREG | 1 |
+| Body | 1214 | Not defined | SHA | 1 |
+| Body | 1222 | Not defined | CEi | 1 |
+| Body | 1224 | Not defined | BFGS | 1 |
+| Body | 1228 | Not defined | GGN | 1 |
+| Body | 1228 | Not defined | MAP | 1 |
+| Body | 1240 | Not defined | GB | 1 |
+| Body | 1240 | Not defined | MPS | 1 |
+| Body | 1241 | Not defined | CPU | 1 |
+| Body | 1243 | Not defined | BY | 1 |
+| Body | 1243 | Not defined | CC | 1 |
+| Body | 1243 | Not defined | NC | 1 |
+| Body | 1243 | Not defined | SA | 1 |

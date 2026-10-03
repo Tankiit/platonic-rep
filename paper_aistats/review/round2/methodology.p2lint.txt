@@ -1,0 +1,2 @@
+[RECEIPT-ATTESTATION: declaration-only — applicability not machine-verified; adjudication judges the attestation]
+PHASE-CONFORMANCE: PASS

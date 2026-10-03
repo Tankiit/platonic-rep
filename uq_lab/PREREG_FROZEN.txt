@@ -1,0 +1,31 @@
+frozen_at=2026-10-02T19:36:37.600808
+sha256=05aa7d680e7d7f11ec6ccca283c8c56ddf021a971ae97de23d94528935d3cc70
+{
+ "E0_gate": {
+  "claim": "Pipeline recovers known AU on Synthetic.",
+  "note": "Frozen natural-image encoders may represent synthetic shapes poorly; that is an encoder failure, not a pipeline one.",
+  "rule": "Spearman(model AU, true AU) >= 0.5, else stop and debug."
+ },
+ "E2": {
+  "claim": "With identical features (alignment = 1), EU agreement drops with head-data mismatch; AU agreement stays near its ceiling-normalised level.",
+  "falsifier_a": "Partial Spearman of EU between heads trained on 10% vs 100% stays > 0.9 -> data term negligible in practice.",
+  "falsifier_b": "AU agreement degrades as much as EU agreement -> thesis becomes 'alignment identifies neither'."
+ },
+ "E2b": {
+  "claim": "Rotation + isotropic rescaling keeps CKA/mKNN fixed but changes EU at fixed weight decay (Prop A); tail reshaping keeps CKA ~ 1 but moves d_eff and EU (Prop B).",
+  "control": "With weight decay re-tuned per transform, the scale effect should mostly vanish."
+ },
+ "E4": {
+  "claim": "At high calibrated alignment, head and data terms dominate the variance of |W_A - W_B|.",
+  "falsifier": "Representation term > 80% Shapley share -> representation dominates; thesis restricted to low-alignment regime."
+ },
+ "H8": {
+  "claim": "Class-level alignment rises with collapse (NC1 falls); residual alignment does not; EU agreement tracks residual alignment.",
+  "falsifier": "Residual alignment also high AND tracks EU agreement -> no gap.",
+  "gate": "share_W (share of item-to-item EU variance from the residual) must be high, else drop H8."
+ },
+ "S_rho": {
+  "claim": "S_rho at the head's own rho predicts EU agreement across encoder pairs better than CKA, CCA, mKNN.",
+  "falsifier": "S_rho no better than CKA (partial correlation controlling for confidence and human AU)."
+ }
+}

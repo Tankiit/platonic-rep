@@ -1,0 +1,1 @@
+[PROTOCOL-VIOLATION: reviewer=da, contract=reviewer/reviewer_full/v2, phase2_lint_failed=DA-TABLE-PARSE] attempt 1 unusable; seat re-run from Phase 1 in fresh contexts
