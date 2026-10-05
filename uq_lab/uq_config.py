@@ -17,6 +17,20 @@ ENCODERS = {
     "mae_b16":     ("timm",      "vit_base_patch16_224.mae",                    None),
 }
 
+# Blind-spot follow-up (BLINDSPOT_PLAN.md, B3 needs >= 8 encoders). Not part of the frozen PREREG.
+# tag 'random' = same architecture, random init (trivial baseline; excluded from natural pairs).
+BLINDSPOT_ENCODERS = dict(ENCODERS, **{
+    "deit_b16":    ("timm",      "deit_base_patch16_224.fb_in1k",                  None),
+    "swin_b":      ("timm",      "swin_base_patch4_window7_224.ms_in22k_ft_in1k",  None),
+    "resnet50":    ("timm",      "resnet50.a1_in1k",                               None),
+    "mixer_b16":   ("timm",      "mixer_b16_224.goog_in21k_ft_in1k",               None),
+    "siglip_b16":  ("open_clip", "ViT-B-16-SigLIP",                                "webli"),
+    "vit_rand_b16": ("timm",     "vit_base_patch16_224",                           "random"),
+})
+FAMILIES = {"dinov2_b": "ssl", "mae_b16": "ssl", "clip_b16": "lang", "siglip_b16": "lang",
+            "vit_sup_b16": "sup_vit", "deit_b16": "sup_vit", "swin_b": "sup_vit",
+            "convnext_s": "sup_conv", "resnet50": "sup_conv", "mixer_b16": "mlp", "vit_rand_b16": "random"}
+
 # Pre-registered predictions and falsifiers. FROZEN 2026-10-02 before any real-data result (see PREREG_FROZEN.txt).
 PREREG = {
     "E0_gate": dict(

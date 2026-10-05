@@ -10,7 +10,7 @@ import time
 
 import numpy as np
 
-from uq_config import ENCODERS, get_device
+from uq_config import BLINDSPOT_ENCODERS, ENCODERS, get_device
 
 
 def build_encoder(name: str, device):
@@ -18,24 +18,39 @@ def build_encoder(name: str, device):
     normalised float tensor [B,3,S,S] on `device`. For open_clip only the IMAGE tower is used."""
     import torch
     import torch.nn.functional as F
-    lib, ident, tag = ENCODERS[name]
+    lib, ident, tag = ENCODERS[name] if name in ENCODERS else BLINDSPOT_ENCODERS[name]
     if lib == "timm":
         import timm
         kw = {"img_size": 224} if "dinov2" in ident else {}
-        model = timm.create_model(ident, pretrained=True, num_classes=0, **kw)
+        if tag == "random":
+            torch.manual_seed(0)
+        model = timm.create_model(ident, pretrained=(tag != "random"), num_classes=0, **kw)
         cfg = model.pretrained_cfg
         mean, std = cfg["mean"], cfg["std"]
         if hasattr(model, "blocks"):
-            blocks, kind, n_prefix = list(model.blocks), "vit", int(getattr(model, "num_prefix_tokens", 1))
-        else:
+            # MlpMixer has no prefix tokens and no num_prefix_tokens attribute.
+            default_prefix = 0 if type(model).__name__ == "MlpMixer" else 1
+            blocks, kind = list(model.blocks), "vit"
+            n_prefix = int(getattr(model, "num_prefix_tokens", default_prefix))
+        elif hasattr(model, "stages"):
             blocks, kind, n_prefix = [b for s in model.stages for b in s.blocks], "conv", 0
+        elif hasattr(model, "layers"):        # Swin: stage outputs are NHWC
+            blocks, kind, n_prefix = [b for s in model.layers for b in s.blocks], "nhwc", 0
+        else:                                 # ResNet bottlenecks across layer1..layer4
+            blocks, kind, n_prefix = [b for s in (model.layer1, model.layer2, model.layer3, model.layer4)
+                                      for b in s], "conv", 0
         version = timm.__version__
     else:
         import open_clip
         clip, _, _ = open_clip.create_model_and_transforms(ident, pretrained=tag, force_quick_gelu=(tag == "openai"))
         model = clip.visual
-        mean, std = open_clip.OPENAI_DATASET_MEAN, open_clip.OPENAI_DATASET_STD
-        blocks, kind, n_prefix = list(model.transformer.resblocks), "vit", 1
+        if hasattr(model, "trunk"):           # timm-backed towers (SigLIP): no CLS token, MAP pooling
+            mean, std = model.trunk.pretrained_cfg["mean"], model.trunk.pretrained_cfg["std"]
+            blocks, kind = list(model.trunk.blocks), "vit"
+            n_prefix = int(getattr(model.trunk, "num_prefix_tokens", 0))
+        else:
+            mean, std = open_clip.OPENAI_DATASET_MEAN, open_clip.OPENAI_DATASET_STD
+            blocks, kind, n_prefix = list(model.transformer.resblocks), "vit", 1
         version = open_clip.__version__
     model = model.eval().to(device)
     m = torch.tensor(mean, device=device).view(1, 3, 1, 1)
@@ -64,6 +79,8 @@ def pool(x, kind: str = "vit", n_prefix: int = 1, batch_first: bool = True):
     """tokens [B,T,d] -> mean over patch tokens (prefix excluded); conv [B,C,H,W] -> spatial mean."""
     if kind == "conv":
         return x.float().mean(dim=(2, 3))
+    if kind == "nhwc":
+        return x.float().mean(dim=(1, 2))
     if not batch_first:
         x = x.transpose(0, 1)
     return x[:, n_prefix:, :].float().mean(1)

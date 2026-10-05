@@ -1,0 +1,140 @@
+{
+ "human_ceiling": {
+  "r_half": 0.5370626005864352,
+  "ceiling": 0.698809030790897,
+  "ci": [
+   0.6942183475935557,
+   0.7039730155389781
+  ]
+ },
+ "encoders": [
+  {
+   "encoder": "dinov2_b",
+   "accuracy": 0.9779,
+   "au_vs_human": 0.3583515238737517,
+   "au_vs_human_ceiling_norm": 0.5128032238910496,
+   "mi_vs_human": 0.36325829935820303
+  },
+  {
+   "encoder": "clip_b16",
+   "accuracy": 0.9467,
+   "au_vs_human": 0.4000190588128378,
+   "au_vs_human_ceiling_norm": 0.5724297214077283,
+   "mi_vs_human": 0.39582499333177334
+  },
+  {
+   "encoder": "vit_sup_b16",
+   "accuracy": 0.9746,
+   "au_vs_human": 0.34114489950509647,
+   "au_vs_human_ceiling_norm": 0.4881804391093745,
+   "mi_vs_human": 0.34547223852099057
+  },
+  {
+   "encoder": "convnext_s",
+   "accuracy": 0.9633,
+   "au_vs_human": 0.3321432706672039,
+   "au_vs_human_ceiling_norm": 0.4752990531494582,
+   "mi_vs_human": 0.3367740888037895
+  },
+  {
+   "encoder": "mae_b16",
+   "accuracy": 0.8441,
+   "au_vs_human": 0.3327990795499071,
+   "au_vs_human_ceiling_norm": 0.47623751967436984,
+   "mi_vs_human": 0.3183127153511346
+  },
+  {
+   "encoder": "deit_b16",
+   "accuracy": 0.9395,
+   "au_vs_human": 0.33347708359194544,
+   "au_vs_human_ceiling_norm": 0.4772077476081316,
+   "mi_vs_human": 0.3384553842510581
+  },
+  {
+   "encoder": "swin_b",
+   "accuracy": 0.9427,
+   "au_vs_human": 0.33982444429358527,
+   "au_vs_human_ceiling_norm": 0.4862908596200872,
+   "mi_vs_human": 0.34780189931746375
+  },
+  {
+   "encoder": "resnet50",
+   "accuracy": 0.8994,
+   "au_vs_human": 0.3471502557019251,
+   "au_vs_human_ceiling_norm": 0.49677414058176655,
+   "mi_vs_human": 0.3410297826774772
+  },
+  {
+   "encoder": "mixer_b16",
+   "accuracy": 0.8733,
+   "au_vs_human": 0.28629580608499655,
+   "au_vs_human_ceiling_norm": 0.40969105073094597,
+   "mi_vs_human": 0.2859604170847082
+  },
+  {
+   "encoder": "siglip_b16",
+   "accuracy": 0.9441,
+   "au_vs_human": 0.4364720397819443,
+   "au_vs_human_ceiling_norm": 0.6245941602786025,
+   "mi_vs_human": 0.43178679672439146
+  }
+ ],
+ "contrast": {
+  "cka": {
+   "R_au": {
+    "spearman": 0.4032938076416337,
+    "partial_given_function": 0.2262882749325469
+   },
+   "R_mi": {
+    "spearman": 0.3725955204216074,
+    "partial_given_function": 0.15436077178245325
+   },
+   "R_eu_gauss": {
+    "spearman": 0.37009222661396574,
+    "partial_given_function": 0.2342414028129486
+   }
+  },
+  "mknn": {
+   "R_au": {
+    "spearman": 0.7017127799736494,
+    "partial_given_function": 0.5372368158950203
+   },
+   "R_mi": {
+    "spearman": 0.7258234519104084,
+    "partial_given_function": 0.523695463883278
+   },
+   "R_eu_gauss": {
+    "spearman": 0.6,
+    "partial_given_function": 0.4764092753539026
+   }
+  },
+  "predictivity": {
+   "R_au": {
+    "spearman": 0.3830039525691699,
+    "partial_given_function": 0.2780400146558945
+   },
+   "R_mi": {
+    "spearman": 0.34888010540184455,
+    "partial_given_function": 0.22246065799519885
+   },
+   "R_eu_gauss": {
+    "spearman": -0.0670619235836627,
+    "partial_given_function": -0.21797371385785574
+   }
+  },
+  "cca_type": {
+   "R_au": {
+    "spearman": 0.726086956521739,
+    "partial_given_function": 0.5893499476672633
+   },
+   "R_mi": {
+    "spearman": 0.7533596837944663,
+    "partial_given_function": 0.5969916377432625
+   },
+   "R_eu_gauss": {
+    "spearman": 0.7508563899868247,
+    "partial_given_function": 0.693037954926487
+   }
+  }
+ }
+}

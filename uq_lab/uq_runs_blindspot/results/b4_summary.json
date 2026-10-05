@@ -1,0 +1,241 @@
+{
+ "triples": [
+  [
+   5,
+   8,
+   9
+  ],
+  [
+   0,
+   7,
+   8
+  ],
+  [
+   2,
+   3,
+   6
+  ]
+ ],
+ "prediction": {
+  "(np.int64(0), np.int64(7), np.int64(8))": {
+   "cka": {
+    "random": {
+     "predict_heldout": 0.5281949934123846,
+     "predict_seen": 0.4650856389986825
+    },
+    "seen": {
+     "predict_heldout": 0.5801054018445323,
+     "predict_seen": 0.49986824769433463
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.5386034255599472,
+     "predict_seen": 0.43807641633728595
+    }
+   },
+   "mknn": {
+    "random": {
+     "predict_heldout": 0.7098814229249012,
+     "predict_seen": 0.6083003952569169
+    },
+    "seen": {
+     "predict_heldout": 0.7069828722002633,
+     "predict_seen": 0.6316205533596837
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.697364953886693,
+     "predict_seen": 0.5897233201581027
+    }
+   },
+   "predictivity": {
+    "random": {
+     "predict_heldout": 0.027667984189723313,
+     "predict_seen": -0.04440052700922266
+    },
+    "seen": {
+     "predict_heldout": 0.037812911725955196,
+     "predict_seen": -0.026350461133069828
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.03359683794466403,
+     "predict_seen": -0.04492753623188405
+    }
+   },
+   "cca_type": {
+    "random": {
+     "predict_heldout": 0.4993412384716732,
+     "predict_seen": 0.570223978919631
+    },
+    "seen": {
+     "predict_heldout": 0.513965744400527,
+     "predict_seen": 0.5859025032938077
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.497364953886693,
+     "predict_seen": 0.5582345191040843
+    }
+   }
+  },
+  "(np.int64(2), np.int64(3), np.int64(6))": {
+   "cka": {
+    "random": {
+     "predict_heldout": 0.7270092226613964,
+     "predict_seen": 0.4364953886693017
+    },
+    "seen": {
+     "predict_heldout": 0.7412384716732542,
+     "predict_seen": 0.4342555994729907
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.737022397891963,
+     "predict_seen": 0.4549407114624506
+    }
+   },
+   "mknn": {
+    "random": {
+     "predict_heldout": 0.7084321475625822,
+     "predict_seen": 0.6359683794466403
+    },
+    "seen": {
+     "predict_heldout": 0.7133069828722002,
+     "predict_seen": 0.6499341238471672
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.7198945981554676,
+     "predict_seen": 0.6416337285902503
+    }
+   },
+   "predictivity": {
+    "random": {
+     "predict_heldout": 0.2757575757575757,
+     "predict_seen": -0.028590250329380756
+    },
+    "seen": {
+     "predict_heldout": 0.2909090909090909,
+     "predict_seen": -0.00606060606060606
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.27602108036890644,
+     "predict_seen": -0.03438735177865612
+    }
+   },
+   "cca_type": {
+    "random": {
+     "predict_heldout": 0.4457180500658761,
+     "predict_seen": 0.6306982872200262
+    },
+    "seen": {
+     "predict_heldout": 0.4491436100131752,
+     "predict_seen": 0.639262187088274
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.44993412384716724,
+     "predict_seen": 0.6301712779973648
+    }
+   }
+  },
+  "(np.int64(5), np.int64(8), np.int64(9))": {
+   "cka": {
+    "random": {
+     "predict_heldout": 0.5602108036890645,
+     "predict_seen": 0.39841897233201584
+    },
+    "seen": {
+     "predict_heldout": 0.5666666666666665,
+     "predict_seen": 0.41870882740447957
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.5681159420289854,
+     "predict_seen": 0.39051383399209477
+    }
+   },
+   "mknn": {
+    "random": {
+     "predict_heldout": 0.6338603425559947,
+     "predict_seen": 0.6334650856389986
+    },
+    "seen": {
+     "predict_heldout": 0.614361001317523,
+     "predict_seen": 0.6047430830039525
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.6324318986269603,
+     "predict_seen": 0.644619388340084
+    }
+   },
+   "predictivity": {
+    "random": {
+     "predict_heldout": 0.1957839262187088,
+     "predict_seen": -0.09051383399209485
+    },
+    "seen": {
+     "predict_heldout": 0.18577075098814227,
+     "predict_seen": -0.1048748353096179
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.22687747035573122,
+     "predict_seen": -0.04677206851119894
+    }
+   },
+   "cca_type": {
+    "random": {
+     "predict_heldout": 0.5276679841897233,
+     "predict_seen": 0.5827404479578392
+    },
+    "seen": {
+     "predict_heldout": 0.5084321475625823,
+     "predict_seen": 0.5766798418972332
+    },
+    "seen_heldout": {
+     "predict_heldout": 0.5246376811594202,
+     "predict_seen": 0.5873517786561264
+    }
+   }
+  }
+ },
+ "heldout_predictability_change": {
+  "cka": {
+   "per_triple": [
+    0.05191040843214767,
+    0.014229249011857736,
+    0.007905138339920903
+   ],
+   "mean": 0.024681598594642102
+  },
+  "mknn": {
+   "per_triple": [
+    0.012516469038208244,
+    0.01146245059288542,
+    0.019499341238471635
+   ],
+   "mean": 0.014492753623188434
+  },
+  "predictivity": {
+   "per_triple": [
+    0.010144927536231883,
+    0.015151515151515194,
+    0.041106719367588945
+   ],
+   "mean": 0.022134387351778678
+  },
+  "cca_type": {
+   "per_triple": [
+    0.016600790513834007,
+    0.00421607378129113,
+    0.019235836627141012
+   ],
+   "mean": 0.01335090030742205
+  }
+ },
+ "gate_kept": {
+  "cka": false,
+  "mknn": false,
+  "predictivity": false,
+  "cca_type": false
+ },
+ "region_verdicts": {
+  "blind": 123,
+  "consistent": 12
+ },
+ "mean_R_seen": 0.4077719555052889,
+ "mean_R_heldout": 0.313677710599581
+}

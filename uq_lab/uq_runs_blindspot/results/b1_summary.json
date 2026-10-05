@@ -1,0 +1,33 @@
+{
+ "min_spearman_5_orders": {
+  "clip_b16": 0.4762459250614813,
+  "convnext_s": 0.558131364032841,
+  "deit_b16": 0.5807473946868486,
+  "dinov2_b": 0.6469700292425072,
+  "mae_b16": 0.5406680866670216,
+  "mixer_b16": 0.6500498390124597,
+  "resnet50": 0.7158401869600467,
+  "siglip_b16": 0.6923679170919792,
+  "swin_b": 0.7015301608825402,
+  "vit_rand_b16": 0.1912600288150072,
+  "vit_sup_b16": 0.49092836673209167
+ },
+ "rankings_barely_move": {
+  "clip_b16": false,
+  "convnext_s": false,
+  "deit_b16": false,
+  "dinov2_b": false,
+  "mae_b16": false,
+  "mixer_b16": false,
+  "resnet50": false,
+  "siglip_b16": false,
+  "swin_b": false,
+  "vit_rand_b16": false,
+  "vit_sup_b16": false
+ },
+ "pair_R_span_over_rho": {
+  "median": 0.2788806352201588,
+  "max": 0.4543050490762623
+ },
+ "kill_criterion_met": false
+}

@@ -8,6 +8,10 @@ scikit-learn, scipy). Only `factory.py` of your existing code imports `tinker`; 
 
 See [EU_SPECIFIC.md](EU_SPECIFIC.md) for exact linear/RBF GP experiments that separate latent posterior variance from prescribed observation noise, compare six alignment indices, and test class-withholding and acquisition-set agreement. Use `prepare_eu_features.py` to extract caches and `run_eu_image_suite.py` for all ten withheld classes. These analyses are exploratory and do not modify the frozen original PREREG.
 
+## Blind-spot follow-up
+
+See [BLINDSPOT_PLAN.md](BLINDSPOT_PLAN.md) for the B0–B7 plan built on one operational blind-spot definition, and `uq_blindspot.py` for its skeleton. Exploratory; does not modify the frozen PREREG.
+
 ## Original design run order (historical)
 1. `pytest -k ref -q`  -> the 9 reference tests pass with no code of yours; they check the theory (BLR dual=primal, scale = prior change,
    resolvent bound, toy CKA-vs-EU, tail reshaping, bootstrap-vs-posterior shrinkage, d_eff identity, S_rho primal trick).

@@ -1,0 +1,49 @@
+{
+ "share_W_median": 0.9992401568217181,
+ "share_W_gate_passed": true,
+ "class_vs_residual": {
+  "cka": {
+   "class_predicts_R": 0.3599472990777338,
+   "residual_predicts_R": 0.5300395256916995,
+   "mean_class": 0.4463455940210802,
+   "mean_resid": 0.2463123713115888
+  },
+  "mknn": {
+   "class_predicts_R": 0.5515151515151514,
+   "residual_predicts_R": 0.6009222661396574,
+   "mean_class": 0.03230116102430556,
+   "mean_resid": 0.1339469401041667
+  },
+  "predictivity": {
+   "class_predicts_R": 0.47997364953886684,
+   "residual_predicts_R": -0.026218708827404475,
+   "mean_class": 0.6073400392836784,
+   "mean_resid": 0.21269991373267932
+  },
+  "cca_type": {
+   "class_predicts_R": 0.5727272727272726,
+   "residual_predicts_R": 0.7484848484848484,
+   "mean_class": 0.5637208497661872,
+   "mean_resid": 0.20279654668864622
+  }
+ },
+ "nuisance_floors": {
+  "colorhist": {
+   "R_eu": 0.1777533519383379,
+   "cka": 0.3868503530150108,
+   "mknn": 0.0501220703125,
+   "predictivity": 0.527291814509839,
+   "cca_type": 0.0827247950480033
+  },
+  "norm_only": {
+   "R_eu": 0.5840057810014453
+  },
+  "vit_rand_b16": {
+   "R_eu": 0.1989857102464275,
+   "cka": 0.5113342030454427,
+   "mknn": 0.065087890625,
+   "predictivity": 0.7260556650312303,
+   "cca_type": 0.1749982959090379
+  }
+ }
+}

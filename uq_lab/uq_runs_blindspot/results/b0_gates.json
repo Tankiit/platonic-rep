@@ -1,0 +1,93 @@
+{
+ "encoders": [
+  "dinov2_b",
+  "clip_b16",
+  "vit_sup_b16",
+  "convnext_s",
+  "mae_b16",
+  "deit_b16",
+  "swin_b",
+  "resnet50",
+  "mixer_b16",
+  "siglip_b16"
+ ],
+ "toy": {
+  "unshared_tail": {
+   "R_eu": 0.009487977487977488,
+   "cka": 0.9977795426195107,
+   "mknn": 0.8339000000000002,
+   "predictivity": 0.7826506701199523,
+   "cca_type": 0.13964068106156627,
+   "smoother_001": 0.14800445588112274,
+   "smoother_1": 0.8278045506951045
+  },
+  "shared_tail": {
+   "R_eu": 1.0,
+   "cka": 0.9999999997800929,
+   "mknn": 1.0,
+   "predictivity": 0.999991820528452,
+   "cca_type": 1.0000000004110372,
+   "smoother_001": 1.0000000003835199,
+   "smoother_1": 0.9999999999840411
+  },
+  "pass": true,
+  "expected": "unshared: CKA ~ 0.998, R_eu ~ 0.03; shared: R_eu > 0.9"
+ },
+ "self_reshape": {
+  "encoder": "dinov2_b",
+  "self_metrics": {
+   "cka": 1.0000000019159443,
+   "mknn": 1.0,
+   "predictivity": 0.9999828295135982,
+   "cca_type": 1.0000000003228526,
+   "smoother_001": 1.0000000002681504,
+   "smoother_1": 1.0000000005069503
+  },
+  "self_R": 1.0,
+  "reshape_metrics": {
+   "cka": 0.99663303396563,
+   "mknn": 0.8692138671875002,
+   "predictivity": 0.9999715642982103,
+   "cca_type": 0.99999999810846,
+   "smoother_001": 0.9969141226148424,
+   "smoother_1": 0.9370765878744829
+  },
+  "deff_ratio": 1.0103821796899672,
+  "pass": true
+ },
+ "saturation": {
+  "max_cca_type": 0.25901505864057417,
+  "min_predictivity": 0.1840345827288612
+ },
+ "thresholds": {
+  "rule": "delta_R = max(0.02, 2 * max_enc SD_seed(R_self)); delta_S[m] = max(0.005, 2 * max_pair SD_seed(S_m))",
+  "created": "2026-10-04T19:02:00",
+  "delta_R": 0.02,
+  "delta_S": {
+   "cka": 0.012272815574237358,
+   "mknn": 0.005439226293029065,
+   "predictivity": 0.015869829783983956,
+   "cca_type": 0.005,
+   "smoother_001": 0.005,
+   "smoother_1": 0.005
+  },
+  "R_self_mean": {
+   "clip_b16": 0.9764587979146995,
+   "convnext_s": 0.9873900341475086,
+   "deit_b16": 0.9822583420645854,
+   "dinov2_b": 0.985915015978754,
+   "mae_b16": 0.9852423453105862,
+   "mixer_b16": 0.9883532899883225,
+   "resnet50": 0.9791531753882937,
+   "siglip_b16": 0.982654008263502,
+   "swin_b": 0.9923707706926926,
+   "vit_sup_b16": 0.9776043395010848
+  },
+  "rho_rel": 0.001,
+  "n_align": 8192,
+  "n_head": 4096,
+  "n_query": 2000,
+  "sha256": "37d6b529f83190ecfb8da464be200be995b87567c2eaab74449b050998579974"
+ },
+ "pass": true
+}

@@ -1,0 +1,45 @@
+{
+ "library": "timm",
+ "identifier": "vit_base_patch16_224.augreg_in21k_ft_in1k",
+ "tag": null,
+ "version": "1.0.21",
+ "kind": "vit",
+ "n_prefix": 1,
+ "n_blocks": 12,
+ "batch_first": true,
+ "mean": [
+  0.5,
+  0.5,
+  0.5
+ ],
+ "std": [
+  0.5,
+  0.5,
+  0.5
+ ],
+ "force_quick_gelu": false,
+ "encoder": "vit_sup_b16",
+ "dataset": "cifar10",
+ "split": "test",
+ "taps": [
+  5,
+  8,
+  11
+ ],
+ "rel_depths": [
+  0.5,
+  0.75,
+  1.0
+ ],
+ "image_size": 224,
+ "upsample": "bicubic 32->224",
+ "pooling": "mean patch tokens / spatial mean, raw block out",
+ "N": 10000,
+ "d": 768,
+ "tap_dims": [
+  768,
+  768,
+  768
+ ],
+ "done": 10000
+}

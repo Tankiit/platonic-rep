@@ -1,0 +1,184 @@
+{
+ "n_encoders": 10,
+ "n_pairs": 435,
+ "effective_n": "number of encoders",
+ "measures": {
+  "cka": {
+   "spearman": 0.6406621890931674,
+   "qap": {
+    "obs": 0.6406621890931674,
+    "p": 0.011494252873563218,
+    "null_mean": 0.40938565167063445,
+    "null_sd": 0.08035390190036193
+   },
+   "qap_residual_encoder_effects": {
+    "obs": 0.5314177975687416,
+    "p": 0.01249375312343828,
+    "null_mean": 0.22676739668530183,
+    "null_sd": 0.10810089281904617
+   },
+   "strata": {
+    "cross_family": {
+     "n": 351,
+     "spearman": 0.6172197247197246
+    },
+    "same_family_cross_encoder": {
+     "n": 54,
+     "spearman": 0.7215932914046121
+    },
+    "same_encoder": {
+     "n": 30,
+     "spearman": 0.5710789766407119
+    }
+   },
+   "partial_given_norm": 0.2791622509941464,
+   "pairwise_verdicts": {
+    "n": 94395,
+    "blind": 0.030287621166375338,
+    "false_alarm": 0.05878489326765189,
+    "both": 0.9080247894485937,
+    "neither": 0.0029026961173790984
+   }
+  },
+  "mknn": {
+   "spearman": 0.7940271621913388,
+   "qap": {
+    "obs": 0.7940271621913388,
+    "p": 0.0004997501249375312,
+    "null_mean": 0.4401585774085596,
+    "null_sd": 0.08778756792650383
+   },
+   "qap_residual_encoder_effects": {
+    "obs": 0.7273024093193702,
+    "p": 0.0009995002498750624,
+    "null_mean": 0.29195564495627924,
+    "null_sd": 0.11058757781516841
+   },
+   "strata": {
+    "cross_family": {
+     "n": 351,
+     "spearman": 0.7679570640381446
+    },
+    "same_family_cross_encoder": {
+     "n": 54,
+     "spearman": 0.8905279207165999
+    },
+    "same_encoder": {
+     "n": 30,
+     "spearman": 0.714349276974416
+    }
+   },
+   "partial_given_norm": 0.6003050491168818,
+   "pairwise_verdicts": {
+    "n": 94395,
+    "blind": 0.033836537952222044,
+    "false_alarm": 0.05807510991048254,
+    "both": 0.904475872662747,
+    "neither": 0.00361247947454844
+   }
+  },
+  "predictivity": {
+   "spearman": 0.5052230744222865,
+   "qap": {
+    "obs": 0.5052230744222865,
+    "p": 0.25487256371814093,
+    "null_mean": 0.47460520310174253,
+    "null_sd": 0.04852804366553699
+   },
+   "qap_residual_encoder_effects": {
+    "obs": 0.49583722677343883,
+    "p": 0.01649175412293853,
+    "null_mean": 0.2854500733090035,
+    "null_sd": 0.08839437023310824
+   },
+   "strata": {
+    "cross_family": {
+     "n": 351,
+     "spearman": 0.4700369075369075
+    },
+    "same_family_cross_encoder": {
+     "n": 54,
+     "spearman": 0.5341337907375643
+    },
+    "same_encoder": {
+     "n": 30,
+     "spearman": 0.6004449388209121
+    }
+   },
+   "partial_given_norm": -0.17580510426267823,
+   "pairwise_verdicts": {
+    "n": 94395,
+    "blind": 0.06104136871656338,
+    "false_alarm": 0.05667673075904444,
+    "both": 0.8772710418984057,
+    "neither": 0.0050108586259865456
+   }
+  },
+  "cca_type": {
+   "spearman": 0.7901437012437001,
+   "qap": {
+    "obs": 0.7901437012437001,
+    "p": 0.0004997501249375312,
+    "null_mean": 0.5006960884891761,
+    "null_sd": 0.06888257483246821
+   },
+   "qap_residual_encoder_effects": {
+    "obs": 0.7316308533339615,
+    "p": 0.0004997501249375312,
+    "null_mean": 0.34026769095265197,
+    "null_sd": 0.09781101394058395
+   },
+   "strata": {
+    "cross_family": {
+     "n": 351,
+     "spearman": 0.7723032523032523
+    },
+    "same_family_cross_encoder": {
+     "n": 54,
+     "spearman": 0.8644558795502191
+    },
+    "same_encoder": {
+     "n": 30,
+     "spearman": 0.7041156840934372
+    }
+   },
+   "partial_given_norm": 0.6076972923877969,
+   "pairwise_verdicts": {
+    "n": 94395,
+    "blind": 0.06151808888182637,
+    "false_alarm": 0.05485460034959479,
+    "both": 0.8767943217331426,
+    "neither": 0.006832989035436199
+   }
+  },
+  "R_norm": {
+   "spearman": 0.6669339895646393,
+   "qap": {
+    "obs": 0.6669339895646393,
+    "p": 0.0004997501249375312,
+    "null_mean": 0.4633574875681003,
+    "null_sd": 0.05290287911028455
+   },
+   "qap_residual_encoder_effects": {
+    "obs": 0.6375839180127886,
+    "p": 0.0004997501249375312,
+    "null_mean": 0.24931404531074483,
+    "null_sd": 0.09795688908090375
+   },
+   "strata": {
+    "cross_family": {
+     "n": 351,
+     "spearman": 0.6658255633255633
+    },
+    "same_family_cross_encoder": {
+     "n": 54,
+     "spearman": 0.6330093386697159
+    },
+    "same_encoder": {
+     "n": 30,
+     "spearman": 0.6876529477196887
+    }
+   }
+  }
+ }
+}

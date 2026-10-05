@@ -1,0 +1,168 @@
+{
+ "pair_order": {
+  "R_mi": 0.5234519104084321,
+  "R_width": 0.547562582345191
+ },
+ "pair_order_flag": {
+  "R_mi": false,
+  "R_width": false
+ },
+ "b3_final_layer": {
+  "R_eu_gauss": {
+   "cka": {
+    "spearman": 0.37009222661396574,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.03939393939393939,
+     "false_alarm": 0.05858585858585859,
+     "both": 0.902020202020202,
+     "neither": 0.0
+    }
+   },
+   "mknn": {
+    "spearman": 0.6,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.06868686868686869,
+     "false_alarm": 0.05555555555555555,
+     "both": 0.8727272727272727,
+     "neither": 0.0030303030303030303
+    }
+   },
+   "predictivity": {
+    "spearman": -0.0670619235836627,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.10101010101010101,
+     "false_alarm": 0.05353535353535353,
+     "both": 0.8404040404040404,
+     "neither": 0.005050505050505051
+    }
+   },
+   "cca_type": {
+    "spearman": 0.7508563899868247,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.09191919191919191,
+     "false_alarm": 0.050505050505050504,
+     "both": 0.8494949494949495,
+     "neither": 0.00808080808080808
+    }
+   }
+  },
+  "R_mi": {
+   "cka": {
+    "spearman": 0.3725955204216074,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.03434343434343434,
+     "false_alarm": 0.17575757575757575,
+     "both": 0.7848484848484848,
+     "neither": 0.005050505050505051
+    }
+   },
+   "mknn": {
+    "spearman": 0.7258234519104084,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.046464646464646465,
+     "false_alarm": 0.15555555555555556,
+     "both": 0.7727272727272727,
+     "neither": 0.025252525252525252
+    }
+   },
+   "predictivity": {
+    "spearman": 0.34888010540184455,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.07878787878787878,
+     "false_alarm": 0.15353535353535352,
+     "both": 0.7404040404040404,
+     "neither": 0.02727272727272727
+    }
+   },
+   "cca_type": {
+    "spearman": 0.7533596837944663,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.06767676767676768,
+     "false_alarm": 0.1484848484848485,
+     "both": 0.7515151515151515,
+     "neither": 0.03232323232323232
+    }
+   }
+  },
+  "R_width": {
+   "cka": {
+    "spearman": 0.3940711462450593,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.03535353535353535,
+     "false_alarm": 0.1787878787878788,
+     "both": 0.7818181818181819,
+     "neither": 0.00404040404040404
+    }
+   },
+   "mknn": {
+    "spearman": 0.7303030303030302,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.043434343434343436,
+     "false_alarm": 0.15454545454545454,
+     "both": 0.7737373737373737,
+     "neither": 0.028282828282828285
+    }
+   },
+   "predictivity": {
+    "spearman": 0.3571805006587615,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.08080808080808081,
+     "false_alarm": 0.15757575757575756,
+     "both": 0.7363636363636363,
+     "neither": 0.025252525252525252
+    }
+   },
+   "cca_type": {
+    "spearman": 0.7617918313570486,
+    "verdicts": {
+     "n": 990,
+     "blind": 0.06666666666666667,
+     "false_alarm": 0.1494949494949495,
+     "both": 0.7505050505050505,
+     "neither": 0.03333333333333333
+    }
+   }
+  }
+ },
+ "b2_verdicts_by_target": {
+  "data|R_au|blind": 40,
+  "data|R_eu|blind": 12,
+  "data|R_eu|consistent": 28,
+  "data|R_mi|blind": 40,
+  "data|R_width|blind": 40,
+  "linear|R_au|blind": 18,
+  "linear|R_au|consistent": 18,
+  "linear|R_au|false alarm": 4,
+  "linear|R_eu|consistent": 22,
+  "linear|R_eu|false alarm": 18,
+  "linear|R_mi|blind": 22,
+  "linear|R_mi|consistent": 18,
+  "linear|R_width|blind": 22,
+  "linear|R_width|consistent": 18,
+  "rotation|R_au|consistent": 40,
+  "rotation|R_eu|consistent": 40,
+  "rotation|R_mi|consistent": 40,
+  "rotation|R_width|consistent": 40,
+  "tail|R_au|blind": 17,
+  "tail|R_au|consistent": 18,
+  "tail|R_au|false alarm": 5,
+  "tail|R_eu|consistent": 24,
+  "tail|R_eu|false alarm": 16,
+  "tail|R_mi|blind": 24,
+  "tail|R_mi|consistent": 16,
+  "tail|R_width|blind": 20,
+  "tail|R_width|consistent": 16,
+  "tail|R_width|false alarm": 4
+ }
+}

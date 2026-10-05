@@ -1,0 +1,45 @@
+{
+ "library": "timm",
+ "identifier": "swin_base_patch4_window7_224.ms_in22k_ft_in1k",
+ "tag": null,
+ "version": "1.0.21",
+ "kind": "nhwc",
+ "n_prefix": 0,
+ "n_blocks": 24,
+ "batch_first": true,
+ "mean": [
+  0.485,
+  0.456,
+  0.406
+ ],
+ "std": [
+  0.229,
+  0.224,
+  0.225
+ ],
+ "force_quick_gelu": false,
+ "encoder": "swin_b",
+ "dataset": "cifar10",
+ "split": "test",
+ "taps": [
+  11,
+  17,
+  23
+ ],
+ "rel_depths": [
+  0.5,
+  0.75,
+  1.0
+ ],
+ "image_size": 224,
+ "upsample": "bicubic 32->224",
+ "pooling": "mean patch tokens / spatial mean, raw block out",
+ "N": 10000,
+ "d": 1024,
+ "tap_dims": [
+  512,
+  512,
+  1024
+ ],
+ "done": 10000
+}
